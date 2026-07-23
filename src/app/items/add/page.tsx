@@ -166,8 +166,9 @@ export default function AddPropertyPage() {
 
   // Call AI Assistant endpoint
   const handleAiGenerate = async () => {
-    if (!rentAmount || !address) {
-      setError('এআই ডেসক্রিপশন জেনারেট করতে প্রথমে ভাড়া এবং ঠিকানা (লোকেশন) প্রদান করুন।');
+    // If no voice description draft is provided and fields are empty, show validation error
+    if (!description.trim() && (!rentAmount || !address)) {
+      setError('এআই ডেসক্রিপশন জেনারেট করতে প্রথমে ভাড়া ও ঠিকানা প্রদান করুন অথবা ডেসক্রিপশন বক্সে কিছু ভয়েসে বলুন।');
       return;
     }
 
@@ -177,12 +178,13 @@ export default function AddPropertyPage() {
       
       const payload = {
         title: title || undefined,
-        rentAmount: Number(rentAmount),
+        rentAmount: rentAmount ? Number(rentAmount) : undefined,
         category,
-        bedrooms: Number(bedrooms),
-        bathrooms: Number(bathrooms),
-        address,
+        bedrooms: bedrooms ? Number(bedrooms) : undefined,
+        bathrooms: bathrooms ? Number(bathrooms) : undefined,
+        address: address || undefined,
         isBachelorAllowed,
+        description: description || undefined,
         imagesBase64: imagesBase64.length > 0 ? imagesBase64 : undefined,
       };
 
@@ -191,11 +193,20 @@ export default function AddPropertyPage() {
       if (res.data) {
         setTitle(res.data.title);
         setDescription(res.data.description);
+        
+        // Auto-fill form inputs if AI extracted them from voice/text description
+        if (res.data.extractedSpecs) {
+          const specs = res.data.extractedSpecs;
+          if (specs.rentAmount) setRentAmount(String(specs.rentAmount));
+          if (specs.bedrooms) setBedrooms(String(specs.bedrooms));
+          if (specs.bathrooms) setBathrooms(String(specs.bathrooms));
+        }
+
         setSuccess('এআই লিস্টিং ডেসক্রিপশন সফলভাবে জেনারেট করেছে!');
       }
     } catch (err: any) {
       console.error(err);
-      setError('এআই সার্ভিস কানেক্ট করতে ব্যর্থ হয়েছে। ম্যানুয়ালি লিখুন।');
+      setError('এআই সার্ভিস কানেক্ট করতে ব্যর্থ হয়েছে। অনুগ্রহ করে নিশ্চিত করুন যে সার্ভার সচল আছে এবং Gemini API Key কনফিগার করা আছে।');
     } finally {
       setAiGenerating(false);
     }
@@ -420,7 +431,15 @@ export default function AddPropertyPage() {
             {/* AI Generator Helper Button & Description Area */}
             <div>
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-2">
-                <label className="block text-xs font-bold text-muted uppercase tracking-wider">বিস্তারিত বিবরণ (Markdown Description) *</label>
+                <div className="flex items-center gap-2">
+                  <label className="block text-xs font-bold text-muted uppercase tracking-wider">বিস্তারিত বিবরণ (Markdown Description) *</label>
+                  {isListening && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-red-500 font-extrabold bg-red-500/10 px-2 py-0.5 rounded-md border border-red-500/20 animate-pulse shrink-0">
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
+                      <span>রেকর্ড হচ্ছে... বলুন</span>
+                    </div>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
