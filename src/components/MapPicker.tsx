@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
 // Fix Leaflet marker icon issue in Next.js
@@ -18,6 +18,15 @@ interface MapPickerProps {
   lat: number;
   lng: number;
   onChange: (lat: number, lng: number) => void;
+}
+
+// Sub-component to dynamically fly map view to new coords
+function ChangeMapView({ center }: { center: [number, number] }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(center, map.getZoom());
+  }, [center, map]);
+  return null;
 }
 
 export default function MapPicker({ lat, lng, onChange }: MapPickerProps) {
@@ -53,6 +62,7 @@ export default function MapPicker({ lat, lng, onChange }: MapPickerProps) {
         scrollWheelZoom={true}
         className="w-full h-full z-10"
       >
+        <ChangeMapView center={position} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

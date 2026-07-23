@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Sparkles, Plus, Image as ImageIcon, MapPin, Phone, CheckCircle2, AlertCircle, Trash2, Mic, MicOff } from 'lucide-react';
+import { Sparkles, Plus, Image as ImageIcon, MapPin, Phone, CheckCircle2, AlertCircle, Trash2, Mic, MicOff, Navigation } from 'lucide-react';
 
 // Dynamically import MapPicker with SSR disabled to avoid Leaflet window errors
 const MapPicker = dynamic(() => import('@/components/MapPicker'), {
@@ -57,6 +57,47 @@ export default function AddPropertyPage() {
   } | null>(null);
   const [interimText, setInterimText] = useState('');
   const interimTextRef = React.useRef('');
+  const [locating, setLocating] = useState(false);
+
+  // Reverse Geocoding with OpenStreetMap Nominatim
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=bn,en`);
+      const data = await res.json();
+      if (data && data.display_name) {
+        setAddress(data.display_name);
+      }
+    } catch (err) {
+      console.error("Reverse geocoding failed:", err);
+    }
+  };
+
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert("আপনার ব্রাউজারে লোকেশন ট্র্যাকিং সাপোর্ট করে না।");
+      return;
+    }
+
+    setLocating(true);
+    setError('');
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude: lat, longitude: lng } = position.coords;
+        setLatitude(lat);
+        setLongitude(lng);
+        await reverseGeocode(lat, lng);
+        setLocating(false);
+        setSuccess('আপনার বর্তমান জিপিএস লোকেশন এবং ঠিকানা সফলভাবে সেট করা হয়েছে!');
+      },
+      (err) => {
+        console.error("Geolocation error:", err);
+        setError('আপনার ডিভাইস থেকে লোকেশন রিড করতে ব্যর্থ হয়েছে। অনুগ্রহ করে ব্রাউজারে লোকেশন পারমিশন দিন।');
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   // Sync ref with state
   useEffect(() => {
@@ -483,7 +524,18 @@ export default function AddPropertyPage() {
 
             {/* Address */}
             <div>
-              <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">বাসার পুরো ঠিকানা (Address) *</label>
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-2">
+                <label className="block text-xs font-bold text-muted uppercase tracking-wider">বাসার পুরো ঠিকানা (Address) *</label>
+                <button
+                  type="button"
+                  onClick={handleGetCurrentLocation}
+                  disabled={locating}
+                  className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer transition-all disabled:opacity-55 self-start sm:self-auto"
+                >
+                  <Navigation className="h-3.5 w-3.5 text-primary" />
+                  <span>{locating ? 'লোকেশন খোঁজা হচ্ছে...' : 'আমার বর্তমান অবস্থান ব্যবহার করুন'}</span>
+                </button>
+              </div>
               <div className="relative">
                 <MapPin className="absolute left-3 top-3 h-4 w-4 text-accent" />
                 <input
@@ -678,6 +730,7 @@ export default function AddPropertyPage() {
               <MapPicker lat={latitude} lng={longitude} onChange={(lat, lng) => {
                 setLatitude(lat);
                 setLongitude(lng);
+                reverseGeocode(lat, lng);
               }} />
 
               {/* Coordinates display */}
