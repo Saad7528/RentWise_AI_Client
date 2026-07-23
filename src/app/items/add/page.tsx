@@ -55,11 +55,17 @@ export default function AddPropertyPage() {
     bedrooms?: number;
     bathrooms?: number;
   } | null>(null);
+  const [interimText, setInterimText] = useState('');
+  const interimTextRef = React.useRef('');
 
   // Sync ref with state
   useEffect(() => {
     isListeningRef.current = isListening;
   }, [isListening]);
+
+  useEffect(() => {
+    interimTextRef.current = interimText;
+  }, [interimText]);
 
   // Stop listening on unmount
   useEffect(() => {
@@ -76,6 +82,14 @@ export default function AddPropertyPage() {
         recognitionRef.current.stop();
       }
       setIsListening(false);
+      // Flush any leftover interim words to avoid losing final spoken words on stop
+      if (interimTextRef.current.trim()) {
+        setDescription((prev) => {
+          const cleanPrev = prev.trim();
+          return cleanPrev + (cleanPrev ? ' ' : '') + interimTextRef.current.trim();
+        });
+      }
+      setInterimText('');
     } else {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (!SpeechRecognition) {
@@ -85,7 +99,7 @@ export default function AddPropertyPage() {
 
       const rec = new SpeechRecognition();
       rec.continuous = true;
-      rec.interimResults = false;
+      rec.interimResults = true; // Enable live real-time feedback
       rec.lang = 'bn-BD'; // Support Bangla speech dictation
 
       rec.onstart = () => {
@@ -93,39 +107,53 @@ export default function AddPropertyPage() {
       };
 
       rec.onend = () => {
-        // Automatically restart speech engine if user didn't explicitly stop it (handles browser timeout)
+        // Safe timeout delay of 300ms to allow browser to release the microphone before restarting
         if (isListeningRef.current) {
-          try {
-            rec.start();
-          } catch (e) {
-            console.error("Auto-restart failed:", e);
-          }
+          setTimeout(() => {
+            try {
+              if (isListeningRef.current) {
+                rec.start();
+              }
+            } catch (e) {
+              console.error("Auto-restart failed:", e);
+            }
+          }, 300);
         } else {
           setIsListening(false);
+          setInterimText('');
         }
       };
 
       rec.onerror = (e: any) => {
         console.error("Speech recognition error:", e);
-        // Do not toggle off on minor errors, just let it handle
         if (e.error === 'not-allowed') {
           alert("মাইক্রোফোন ব্যবহারের অনুমতি দিন।");
           setIsListening(false);
+          setInterimText('');
         }
       };
 
       rec.onresult = (event: any) => {
         let finalTranscript = '';
+        let currentInterim = '';
+
         for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
+            finalTranscript += transcript;
+          } else {
+            currentInterim += transcript;
           }
         }
+
         if (finalTranscript) {
           setDescription((prev) => {
             const cleanPrev = prev.trim();
             return cleanPrev + (cleanPrev ? ' ' : '') + finalTranscript.trim();
           });
+          setInterimText('');
+        } else {
+          setInterimText(currentInterim);
         }
       };
 
@@ -551,8 +579,11 @@ export default function AddPropertyPage() {
 
               <textarea
                 placeholder="বাসার বিবরণ দিন অথবা এআই রাইটার বাটন ক্লিক করে অটো-জেনারেট করুন..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={description + (interimText ? (description.trim() ? ' ' : '') + interimText : '')}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  setInterimText('');
+                }}
                 required
                 rows={8}
                 className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-border rounded-xl text-sm focus:outline-none focus:border-primary text-foreground font-mono"
