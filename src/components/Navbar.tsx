@@ -1,15 +1,40 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Menu, X, Home, User, LogOut, ShieldAlert, PlusCircle, Settings2, HelpCircle } from 'lucide-react';
+import { Menu, X, Home, User, LogOut, ShieldAlert, PlusCircle, Settings2, HelpCircle, Sun, Moon } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const { user, logout, loading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  // Initialize theme from localStorage or system preference
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      setTheme('dark');
+      document.documentElement.classList.add('dark');
+    } else {
+      setTheme('light');
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    if (theme === 'light') {
+      setTheme('dark');
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      setTheme('light');
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -54,6 +79,13 @@ export const Navbar: React.FC = () => {
 
           {/* Right Action buttons */}
           <div className="hidden md:flex items-center gap-4">
+            <button
+              onClick={toggleTheme}
+              className="p-2 text-muted hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg bg-slate-50 dark:bg-slate-900 border border-border cursor-pointer shrink-0"
+              aria-label="Toggle theme"
+            >
+              {theme === 'light' ? <Moon className="h-4.5 w-4.5" /> : <Sun className="h-4.5 w-4.5" />}
+            </button>
             {!loading && (
               user ? (
                 <div className="flex items-center gap-3">
@@ -90,8 +122,15 @@ export const Navbar: React.FC = () => {
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <div className="flex md:hidden">
+          {/* Mobile menu and theme buttons */}
+          <div className="flex items-center gap-2.5 md:hidden">
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 text-muted hover:text-primary transition-colors rounded-lg bg-slate-50 dark:bg-slate-900 border border-border cursor-pointer"
+              aria-label="Toggle theme"
+            >
+              {theme === 'light' ? <Moon className="h-4.5 w-4.5" /> : <Sun className="h-4.5 w-4.5" />}
+            </button>
             <button
               onClick={toggleMenu}
               type="button"

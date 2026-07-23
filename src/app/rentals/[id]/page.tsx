@@ -197,25 +197,25 @@ export default function PropertyDetailsPage() {
 
             {/* Core Specs metrics */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 bg-card border border-border rounded-2xl">
-              <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-border/40">
-                <Bed className="h-5 w-5 text-primary mx-auto mb-1" />
-                <span className="block text-[10px] text-muted font-semibold uppercase">Bedrooms</span>
-                <span className="text-sm font-bold text-foreground">{property.bedrooms} Rooms</span>
+              <div className="text-center p-3 rounded-xl bg-teal-50/50 dark:bg-teal-950/20 border border-teal-100/50 dark:border-teal-900/30 transition-all duration-200 hover:scale-[1.02]">
+                <Bed className="h-5 w-5 text-teal-600 dark:text-teal-400 mx-auto mb-1" />
+                <span className="block text-[10px] text-teal-800 dark:text-teal-300 font-bold uppercase tracking-wider">Bedrooms</span>
+                <span className="text-sm font-extrabold text-teal-900 dark:text-teal-200 mt-0.5 block">{property.bedrooms} Rooms</span>
               </div>
-              <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-border/40">
-                <Home className="h-5 w-5 text-primary mx-auto mb-1" />
-                <span className="block text-[10px] text-muted font-semibold uppercase">Bathrooms</span>
-                <span className="text-sm font-bold text-foreground">{property.bathrooms} Baths</span>
+              <div className="text-center p-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100/50 dark:border-emerald-900/30 transition-all duration-200 hover:scale-[1.02]">
+                <Home className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mx-auto mb-1" />
+                <span className="block text-[10px] text-emerald-800 dark:text-emerald-300 font-bold uppercase tracking-wider">Bathrooms</span>
+                <span className="text-sm font-extrabold text-emerald-900 dark:text-emerald-200 mt-0.5 block">{property.bathrooms} Baths</span>
               </div>
-              <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-border/40">
-                <Calendar className="h-5 w-5 text-primary mx-auto mb-1" />
-                <span className="block text-[10px] text-muted font-semibold uppercase">Rent Amount</span>
-                <span className="text-sm font-bold text-foreground">{rentFormatted}</span>
+              <div className="text-center p-3 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100/50 dark:border-orange-900/30 transition-all duration-200 hover:scale-[1.02]">
+                <Calendar className="h-5 w-5 text-orange-600 dark:text-orange-400 mx-auto mb-1" />
+                <span className="block text-[10px] text-orange-800 dark:text-orange-300 font-bold uppercase tracking-wider">Rent Amount</span>
+                <span className="text-sm font-extrabold text-orange-900 dark:text-orange-200 mt-0.5 block">{rentFormatted}</span>
               </div>
-              <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-border/40">
-                <ShieldCheck className="h-5 w-5 text-primary mx-auto mb-1" />
-                <span className="block text-[10px] text-muted font-semibold uppercase">Advance Deposit</span>
-                <span className="text-sm font-bold text-foreground">{depositFormatted}</span>
+              <div className="text-center p-3 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100/50 dark:border-indigo-900/30 transition-all duration-200 hover:scale-[1.02]">
+                <ShieldCheck className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mx-auto mb-1" />
+                <span className="block text-[10px] text-indigo-800 dark:text-indigo-300 font-bold uppercase tracking-wider">Advance Deposit</span>
+                <span className="text-sm font-extrabold text-indigo-900 dark:text-indigo-200 mt-0.5 block">{depositFormatted}</span>
               </div>
             </div>
 

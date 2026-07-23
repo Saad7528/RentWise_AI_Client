@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { Home, UserPlus, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Navbar } from '@/components/Navbar';
+import { Footer } from '@/components/Footer';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -53,10 +55,13 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-12">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_50%,rgba(15,118,110,0.08),rgba(255,255,255,0))]" />
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <Navbar />
       
-      <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-xl p-8 z-10">
+      <main className="flex-grow flex items-center justify-center px-4 py-12 relative">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_50%,rgba(15,118,110,0.08),rgba(255,255,255,0))]" />
+        
+        <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-xl p-8 z-10">
         
         {/* Brand Header */}
         <div className="text-center mb-8">
@@ -181,7 +186,10 @@ export default function RegisterPage() {
           </Link>
         </p>
 
-      </div>
+        </div>
+      </main>
+      
+      <Footer />
     </div>
   );
 }
