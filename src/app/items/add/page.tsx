@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Sparkles, Plus, Image as ImageIcon, MapPin, Phone, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
+import { Sparkles, Plus, Image as ImageIcon, MapPin, Phone, CheckCircle2, AlertCircle, Trash2, Mic, MicOff } from 'lucide-react';
 
 // Dynamically import MapPicker with SSR disabled to avoid Leaflet window errors
 const MapPicker = dynamic(() => import('@/components/MapPicker'), {
@@ -45,6 +45,69 @@ export default function AddPropertyPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = React.useRef<any>(null);
+
+  // Stop listening on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
+
+  const toggleListening = () => {
+    if (isListening) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsListening(false);
+    } else {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("আপনার ব্রাউজারে স্পিচ-টু-টেক্সট সাপোর্ট করে না। অনুগ্রহ করে ক্রোম ব্রাউজার ব্যবহার করুন।");
+        return;
+      }
+
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = false;
+      rec.lang = 'bn-BD'; // Support Bangla speech dictation
+
+      rec.onstart = () => {
+        setIsListening(true);
+      };
+
+      rec.onend = () => {
+        setIsListening(false);
+      };
+
+      rec.onerror = (e: any) => {
+        console.error("Speech recognition error:", e);
+        setIsListening(false);
+      };
+
+      rec.onresult = (event: any) => {
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          }
+        }
+        if (finalTranscript) {
+          setDescription((prev) => prev + (prev ? ' ' : '') + finalTranscript.trim());
+        }
+      };
+
+      try {
+        rec.start();
+        recognitionRef.current = rec;
+      } catch (err) {
+        console.error("Failed to start speech recognition:", err);
+      }
+    }
+  };
 
   // Redirect if not logged in
   useEffect(() => {
@@ -356,17 +419,40 @@ export default function AddPropertyPage() {
 
             {/* AI Generator Helper Button & Description Area */}
             <div>
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-2">
                 <label className="block text-xs font-bold text-muted uppercase tracking-wider">বিস্তারিত বিবরণ (Markdown Description) *</label>
-                <button
-                  type="button"
-                  onClick={handleAiGenerate}
-                  disabled={aiGenerating}
-                  className="bg-secondary/10 hover:bg-secondary/20 text-secondary text-xs font-bold px-3 py-1.5 rounded-lg border border-secondary/20 hover:border-secondary/30 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-55"
-                >
-                  <Sparkles className="h-3.5 w-3.5 animate-pulse text-secondary" />
-                  <span>Generate Description with AI</span>
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={toggleListening}
+                    className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer ${
+                      isListening
+                        ? 'bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20'
+                        : 'bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 hover:border-primary/30'
+                    }`}
+                  >
+                    {isListening ? (
+                      <>
+                        <MicOff className="h-3.5 w-3.5 animate-pulse text-red-500" />
+                        <span>ভয়েস বন্ধ করুন</span>
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="h-3.5 w-3.5 text-primary" />
+                        <span>ভয়েসে বলুন (Bangla/EN)</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAiGenerate}
+                    disabled={aiGenerating}
+                    className="bg-secondary/10 hover:bg-secondary/20 text-secondary text-xs font-bold px-3 py-1.5 rounded-lg border border-secondary/20 hover:border-secondary/30 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-55"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 animate-pulse text-secondary" />
+                    <span>Generate Description with AI</span>
+                  </button>
+                </div>
               </div>
 
               <textarea
