@@ -47,6 +47,12 @@ export default function AddPropertyPage() {
   const [success, setSuccess] = useState('');
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = React.useRef<any>(null);
+  const isListeningRef = React.useRef(isListening);
+
+  // Sync ref with state
+  useEffect(() => {
+    isListeningRef.current = isListening;
+  }, [isListening]);
 
   // Stop listening on unmount
   useEffect(() => {
@@ -80,12 +86,25 @@ export default function AddPropertyPage() {
       };
 
       rec.onend = () => {
-        setIsListening(false);
+        // Automatically restart speech engine if user didn't explicitly stop it (handles browser timeout)
+        if (isListeningRef.current) {
+          try {
+            rec.start();
+          } catch (e) {
+            console.error("Auto-restart failed:", e);
+          }
+        } else {
+          setIsListening(false);
+        }
       };
 
       rec.onerror = (e: any) => {
         console.error("Speech recognition error:", e);
-        setIsListening(false);
+        // Do not toggle off on minor errors, just let it handle
+        if (e.error === 'not-allowed') {
+          alert("মাইক্রোফোন ব্যবহারের অনুমতি দিন।");
+          setIsListening(false);
+        }
       };
 
       rec.onresult = (event: any) => {
@@ -96,7 +115,10 @@ export default function AddPropertyPage() {
           }
         }
         if (finalTranscript) {
-          setDescription((prev) => prev + (prev ? ' ' : '') + finalTranscript.trim());
+          setDescription((prev) => {
+            const cleanPrev = prev.trim();
+            return cleanPrev + (cleanPrev ? ' ' : '') + finalTranscript.trim();
+          });
         }
       };
 
