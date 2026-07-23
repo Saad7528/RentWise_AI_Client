@@ -48,6 +48,13 @@ export default function AddPropertyPage() {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = React.useRef<any>(null);
   const isListeningRef = React.useRef(isListening);
+  const [aiProposal, setAiProposal] = useState<{
+    title: string;
+    description: string;
+    rentAmount?: number;
+    bedrooms?: number;
+    bathrooms?: number;
+  } | null>(null);
 
   // Sync ref with state
   useEffect(() => {
@@ -213,18 +220,14 @@ export default function AddPropertyPage() {
       const res = await api.post('/api/ai/generate', payload);
 
       if (res.data) {
-        setTitle(res.data.title);
-        setDescription(res.data.description);
-        
-        // Auto-fill form inputs if AI extracted them from voice/text description
-        if (res.data.extractedSpecs) {
-          const specs = res.data.extractedSpecs;
-          if (specs.rentAmount) setRentAmount(String(specs.rentAmount));
-          if (specs.bedrooms) setBedrooms(String(specs.bedrooms));
-          if (specs.bathrooms) setBathrooms(String(specs.bathrooms));
-        }
-
-        setSuccess('এআই লিস্টিং ডেসক্রিপশন সফলভাবে জেনারেট করেছে!');
+        setAiProposal({
+          title: res.data.title,
+          description: res.data.description,
+          rentAmount: res.data.extractedSpecs?.rentAmount,
+          bedrooms: res.data.extractedSpecs?.bedrooms,
+          bathrooms: res.data.extractedSpecs?.bathrooms,
+        });
+        setSuccess('এআই লিস্টিং সংক্রান্ত কিছু তথ্য প্রস্তাব করেছে। নিচে রিভিউ করে "প্রয়োগ করুন" বাটনে ক্লিক করুন!');
       }
     } catch (err: any) {
       console.error(err);
@@ -495,6 +498,56 @@ export default function AddPropertyPage() {
                   </button>
                 </div>
               </div>
+
+              {/* AI Proposal Card */}
+              {aiProposal && (
+                <div className="mb-4 p-4 bg-secondary/5 dark:bg-secondary/10 border border-secondary/20 rounded-xl space-y-3 animate-fadeIn">
+                  <div className="flex justify-between items-center pb-2 border-b border-secondary/10">
+                    <span className="text-xs font-bold text-secondary uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="h-4 w-4" />
+                      এআই প্রস্তাবিত তথ্য (AI Proposed Info)
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (aiProposal.title) setTitle(aiProposal.title);
+                          if (aiProposal.description) setDescription(aiProposal.description);
+                          if (aiProposal.rentAmount) setRentAmount(String(aiProposal.rentAmount));
+                          if (aiProposal.bedrooms) setBedrooms(String(aiProposal.bedrooms));
+                          if (aiProposal.bathrooms) setBathrooms(String(aiProposal.bathrooms));
+                          setAiProposal(null);
+                          setSuccess('এআই প্রস্তাবিত সকল তথ্য ফর্মে সফলভাবে প্রয়োগ করা হয়েছে!');
+                        }}
+                        className="bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span>প্রয়োগ করুন (Apply)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAiProposal(null)}
+                        className="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground text-[11px] font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        বাতিল (Cancel)
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-xs space-y-1.5 text-foreground/80">
+                    <p><strong>প্রস্তাবিত শিরোনাম:</strong> {aiProposal.title}</p>
+                    {aiProposal.rentAmount ? (
+                      <p><strong>প্রস্তাবিত ভাড়া:</strong> <span className="text-secondary font-bold text-sm">৳{aiProposal.rentAmount} BDT</span></p>
+                    ) : null}
+                    <p><strong>প্রস্তাবিত রুম সংখ্যা:</strong> {aiProposal.bedrooms} বেডরুম, {aiProposal.bathrooms} বাথরুম</p>
+                    <div className="pt-1.5 border-t border-secondary/10">
+                      <strong className="block mb-1 text-[11px] text-muted">ডেসক্রিপশন প্রাকদর্শন (Markdown Preview):</strong>
+                      <div className="bg-slate-100 dark:bg-slate-950 p-2.5 rounded-lg border border-border text-xs max-h-32 overflow-y-auto font-mono text-muted whitespace-pre-wrap">
+                        {aiProposal.description}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <textarea
                 placeholder="বাসার বিবরণ দিন অথবা এআই রাইটার বাটন ক্লিক করে অটো-জেনারেট করুন..."
