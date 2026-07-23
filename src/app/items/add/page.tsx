@@ -265,6 +265,36 @@ export default function AddPropertyPage() {
     }
   };
 
+  // Reset all form inputs to default values
+  const handleResetForm = () => {
+    if (window.confirm("আপনি কি নিশ্চিত যে সম্পূর্ণ ফর্মটি রিসেট করতে চান? আপনার এডিট করা সব তথ্য মুছে যাবে।")) {
+      setTitle('');
+      setCategory('Family');
+      setRentAmount('');
+      setDeposit('');
+      setBedrooms('2');
+      setBathrooms('2');
+      setAddress('');
+      setIsBachelorAllowed(false);
+      setDescription('');
+      setLatitude(23.7808875);
+      setLongitude(90.4228516);
+      setImagesBase64([]);
+      setImageUrls([]);
+      setImageUrlInput('');
+      setAiProposal(null);
+      setError('');
+      setSuccess('ফর্মের সকল তথ্য সফলভাবে রিসেট করা হয়েছে!');
+      
+      // Reset landlord phone if available
+      if (user && user.phone) {
+        setContactPhone(user.phone);
+      } else {
+        setContactPhone('');
+      }
+    }
+  };
+
   // Handle main form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -535,7 +565,7 @@ export default function AddPropertyPage() {
                       <Sparkles className="h-4 w-4" />
                       এআই প্রস্তাবিত তথ্য (AI Proposed Info)
                     </span>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={() => {
@@ -545,12 +575,33 @@ export default function AddPropertyPage() {
                           if (aiProposal.bedrooms) setBedrooms(String(aiProposal.bedrooms));
                           if (aiProposal.bathrooms) setBathrooms(String(aiProposal.bathrooms));
                           setAiProposal(null);
-                          setSuccess('এআই প্রস্তাবিত সকল তথ্য ফর্মে সফলভাবে প্রয়োগ করা হয়েছে!');
+                          setSuccess('এআই প্রস্তাবিত তথ্য সফলভাবে প্রতিস্থাপন (Replace) করা হয়েছে!');
                         }}
-                        className="bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                        className="bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
                       >
                         <CheckCircle2 className="h-3.5 w-3.5" />
-                        <span>প্রয়োগ করুন (Apply)</span>
+                        <span>প্রতিস্থাপন (Replace)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (aiProposal.title) setTitle(aiProposal.title);
+                          if (aiProposal.rentAmount) setRentAmount(String(aiProposal.rentAmount));
+                          if (aiProposal.bedrooms) setBedrooms(String(aiProposal.bedrooms));
+                          if (aiProposal.bathrooms) setBathrooms(String(aiProposal.bathrooms));
+                          if (aiProposal.description) {
+                            setDescription((prev) => {
+                              const cleanPrev = prev.trim();
+                              return cleanPrev + (cleanPrev ? '\n\n' : '') + aiProposal.description.trim();
+                            });
+                          }
+                          setAiProposal(null);
+                          setSuccess('এআই প্রস্তাবিত তথ্য পূর্বের ডেসক্রিপশনের সাথে যুক্ত (Append) করা হয়েছে!');
+                        }}
+                        className="bg-blue-500 hover:bg-blue-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        <span>যোগ করুন (Append)</span>
                       </button>
                       <button
                         type="button"
@@ -590,15 +641,22 @@ export default function AddPropertyPage() {
               />
             </div>
 
-            {/* Submit Button */}
-            <div className="pt-4">
+            {/* Submit & Reset Button */}
+            <div className="pt-4 flex flex-col sm:flex-row gap-3">
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-primary hover:bg-primary-hover text-white text-sm font-bold py-3.5 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-55"
+                className="flex-1 bg-primary hover:bg-primary-hover text-white text-sm font-bold py-3.5 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-55"
               >
                 <Plus className="h-5 w-5" />
                 <span>বিজ্ঞাপনটি প্রকাশ করুন</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleResetForm}
+                className="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground text-sm font-bold px-6 py-3.5 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <span>রিসেট (Reset)</span>
               </button>
             </div>
 
