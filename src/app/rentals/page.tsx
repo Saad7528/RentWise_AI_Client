@@ -1002,7 +1002,7 @@ function RentalsContent() {
             </span>
             <span className="text-[10px] sm:text-xs font-bold text-foreground bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/20">
               {propertiesList.length > 0 
-                ? `${propertiesList.length}টি প্রোপার্টি পাওয়া গেছে`
+                ? `${toBengaliNumber(propertiesList.length)}টি প্রোপার্টি পাওয়া গেছে`
                 : 'কোনো প্রোপার্টি পাওয়া যায়নি'
               }
             </span>
@@ -1047,7 +1047,7 @@ function RentalsContent() {
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <span className="text-xs font-bold text-muted">
-                Page {page} of {totalPages}
+                পৃষ্ঠা {toBengaliNumber(page)} এর {toBengaliNumber(totalPages)}
               </span>
               <button
                 disabled={page >= totalPages}
@@ -1103,6 +1103,23 @@ export default function ExploreRentalsPage() {
     </div>
   );
 }
+
+// Helper function to translate English digits to Bengali digits
+const toBengaliNumber = (num: number | string) => {
+  const englishToBengaliMap: { [key: string]: string } = {
+    '0': '০',
+    '1': '১',
+    '2': '২',
+    '3': '৩',
+    '4': '৪',
+    '5': '৫',
+    '6': '৬',
+    '7': '৭',
+    '8': '৮',
+    '9': '৯'
+  };
+  return String(num).replace(/[0-9]/g, (w) => englishToBengaliMap[w]);
+};
 
 // Division, District, Thana and Neighborhood static cascading configuration
 const GEO_DATA: {
