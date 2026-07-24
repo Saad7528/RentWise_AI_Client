@@ -4,12 +4,13 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Menu, X, Home, User, LogOut, ShieldAlert, PlusCircle, Settings2, HelpCircle, Sun, Moon } from 'lucide-react';
+import { Menu, X, Home, User, LogOut, ShieldAlert, PlusCircle, Settings2, HelpCircle, Sun, Moon, Sparkles } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
-  const { user, logout, loading } = useAuth();
+  const { user, logout, loading, loginDemo } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [showDemoDropdown, setShowDemoDropdown] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   // Initialize theme from localStorage or system preference
@@ -113,12 +114,60 @@ export const Navbar: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <Link
-                  href="/login"
-                  className="bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors cursor-pointer"
-                >
-                  Sign In
-                </Link>
+                <div className="flex items-center gap-2 relative">
+                  {/* Demo Dropdown */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowDemoDropdown(!showDemoDropdown)}
+                      className="flex items-center gap-1.5 bg-card hover:bg-slate-50 dark:hover:bg-slate-900 border border-border text-foreground text-xs font-semibold px-3 py-2 rounded-lg transition-colors cursor-pointer shrink-0"
+                    >
+                      <Sparkles className="h-4 w-4 text-accent animate-pulse shrink-0" />
+                      <span>Demo Login</span>
+                    </button>
+
+                    {showDemoDropdown && (
+                      <div className="absolute right-0 mt-2 w-48 rounded-xl bg-card border border-border shadow-xl py-1.5 z-50 animate-fadeIn">
+                        <button
+                          onClick={async () => {
+                            setShowDemoDropdown(false);
+                            await loginDemo('tenant');
+                            window.location.reload();
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-xs sm:text-sm text-foreground hover:bg-primary/10 transition-colors font-semibold flex items-center gap-2 cursor-pointer"
+                        >
+                          👤 Tenant Login
+                        </button>
+                        <button
+                          onClick={async () => {
+                            setShowDemoDropdown(false);
+                            await loginDemo('landlord');
+                            window.location.reload();
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-xs sm:text-sm text-foreground hover:bg-primary/10 transition-colors font-semibold flex items-center gap-2 cursor-pointer"
+                        >
+                          🏡 Landlord Login
+                        </button>
+                        <button
+                          onClick={async () => {
+                            setShowDemoDropdown(false);
+                            await loginDemo('admin');
+                            window.location.reload();
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-xs sm:text-sm text-foreground hover:bg-primary/10 transition-colors font-semibold flex items-center gap-2 cursor-pointer text-accent"
+                        >
+                          🛡️ Admin Login
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <Link
+                    href="/login"
+                    className="bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors cursor-pointer"
+                  >
+                    Sign In
+                  </Link>
+                </div>
               )
             )}
           </div>
@@ -227,13 +276,53 @@ export const Navbar: React.FC = () => {
                 Log Out
               </button>
             ) : (
-              <Link
-                href="/login"
-                onClick={toggleMenu}
-                className="w-full flex items-center justify-center bg-primary hover:bg-primary-hover text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
-              >
-                Sign In
-              </Link>
+              <div className="space-y-2">
+                <Link
+                  href="/login"
+                  onClick={toggleMenu}
+                  className="w-full flex items-center justify-center bg-primary hover:bg-primary-hover text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
+                >
+                  Sign In
+                </Link>
+
+                <div className="pt-2 border-t border-border/60">
+                  <span className="block text-[10px] font-bold text-muted uppercase tracking-wider mb-2 text-center">
+                    Demo Login (1-Click)
+                  </span>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={async () => {
+                        toggleMenu();
+                        await loginDemo('tenant');
+                        window.location.reload();
+                      }}
+                      className="bg-card hover:bg-slate-50 dark:hover:bg-slate-800 border border-border text-foreground text-[10px] font-bold py-2 rounded-lg transition-colors cursor-pointer"
+                    >
+                      Tenant
+                    </button>
+                    <button
+                      onClick={async () => {
+                        toggleMenu();
+                        await loginDemo('landlord');
+                        window.location.reload();
+                      }}
+                      className="bg-card hover:bg-slate-50 dark:hover:bg-slate-800 border border-border text-foreground text-[10px] font-bold py-2 rounded-lg transition-colors cursor-pointer"
+                    >
+                      Landlord
+                    </button>
+                    <button
+                      onClick={async () => {
+                        toggleMenu();
+                        await loginDemo('admin');
+                        window.location.reload();
+                      }}
+                      className="bg-card hover:bg-slate-50 dark:hover:bg-slate-800 border border-border text-accent text-[10px] font-bold py-2 rounded-lg transition-colors cursor-pointer"
+                    >
+                      Admin
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>
