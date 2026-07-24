@@ -575,6 +575,18 @@ function RentalsContent() {
           )}
 
           {/* Cards Grid */}
+          <div className="flex items-center justify-between mb-4 mt-2">
+            <span className="text-[10px] sm:text-xs font-extrabold text-muted uppercase tracking-wider">
+              {isAiMode ? '✨ এআই রিকমেন্ডেশন ফলাফল' : '🔍 অনুসন্ধান ফলাফল'}
+            </span>
+            <span className="text-[10px] sm:text-xs font-bold text-foreground bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/20">
+              {propertiesList.length > 0 
+                ? `${propertiesList.length}টি প্রোপার্টি পাওয়া গেছে`
+                : 'কোনো প্রোপার্টি পাওয়া যায়নি'
+              }
+            </span>
+          </div>
+
           <div className="flex-1">
             {isLoading ? (
               <SkeletonLoader count={4} />
