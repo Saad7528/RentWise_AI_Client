@@ -44,10 +44,43 @@ function RentalsContent() {
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
 
   // District / GPS Radius Search States
+  const [division, setDivision] = useState('');
   const [district, setDistrict] = useState('');
+  const [thana, setThana] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
   const [pinnedLat, setPinnedLat] = useState<number | null>(null);
   const [pinnedLng, setPinnedLng] = useState<number | null>(null);
   const [searchRadius, setSearchRadius] = useState('5000'); // default 5km
+
+  const handleDivisionChange = (val: string) => {
+    setDivision(val);
+    setDistrict('');
+    setThana('');
+    setNeighborhood('');
+    setIsAiMode(false);
+    setPage(1);
+  };
+
+  const handleDistrictChange = (val: string) => {
+    setDistrict(val);
+    setThana('');
+    setNeighborhood('');
+    setIsAiMode(false);
+    setPage(1);
+  };
+
+  const handleThanaChange = (val: string) => {
+    setThana(val);
+    setNeighborhood('');
+    setIsAiMode(false);
+    setPage(1);
+  };
+
+  const handleNeighborhoodChange = (val: string) => {
+    setNeighborhood(val);
+    setIsAiMode(false);
+    setPage(1);
+  };
 
   // Voice search states
   const [isAiVoiceListening, setIsAiVoiceListening] = useState(false);
@@ -180,7 +213,7 @@ function RentalsContent() {
 
   // Query 1: Regular filtering query
   const { data: regularData, isLoading: isRegularLoading } = useQuery({
-    queryKey: ['properties', search, category, rentMin, rentMax, bedrooms, bathrooms, isBachelorAllowed, sort, page, district, pinnedLat, pinnedLng, searchRadius],
+    queryKey: ['properties', search, category, rentMin, rentMax, bedrooms, bathrooms, isBachelorAllowed, sort, page, division, district, thana, neighborhood, pinnedLat, pinnedLng, searchRadius],
     queryFn: async () => {
       const params: any = { page, limit: 8, sort };
       if (search) params.search = search;
@@ -191,6 +224,8 @@ function RentalsContent() {
       if (bathrooms) params.bathrooms = bathrooms;
       if (isBachelorAllowed) params.isBachelorAllowed = 'true';
       if (district) params.district = district;
+      if (thana) params.thana = thana;
+      if (neighborhood) params.neighborhood = neighborhood;
       if (pinnedLat && pinnedLng) {
         params.lat = pinnedLat;
         params.lng = pinnedLng;
@@ -255,7 +290,10 @@ function RentalsContent() {
     setBathrooms('');
     setIsBachelorAllowed(false);
     setSort('newest');
+    setDivision('');
     setDistrict('');
+    setThana('');
+    setNeighborhood('');
     setPinnedLat(null);
     setPinnedLng(null);
     setPage(1);
@@ -396,31 +434,85 @@ function RentalsContent() {
               </button>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {/* Row 1: Geographical cascading selectors */}
+            <div className="grid grid-cols-4 gap-4 pb-4 border-b border-dashed border-border/60">
+              {/* Division */}
+              <div>
+                <label className="block text-[10px] font-bold text-muted uppercase mb-1">বিভাগ (Division)</label>
+                <select
+                  value={division}
+                  onChange={(e) => handleDivisionChange(e.target.value)}
+                  className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg text-xs focus:outline-none focus:border-primary text-foreground cursor-pointer"
+                >
+                  <option value="">সকল বিভাগ</option>
+                  {Object.keys(GEO_DATA).map((divKey) => (
+                    <option key={divKey} value={divKey}>
+                      {GEO_DATA[divKey].name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* District */}
               <div>
                 <label className="block text-[10px] font-bold text-muted uppercase mb-1">জেলা (District)</label>
                 <select
                   value={district}
-                  onChange={(e) => {
-                    setDistrict(e.target.value);
-                    setIsAiMode(false);
-                    setPage(1);
-                  }}
-                  className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg text-xs focus:outline-none focus:border-primary text-foreground"
+                  disabled={!division}
+                  onChange={(e) => handleDistrictChange(e.target.value)}
+                  className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg text-xs focus:outline-none focus:border-primary text-foreground disabled:opacity-50 cursor-pointer"
                 >
                   <option value="">সকল জেলা</option>
-                  <option value="Thakurgaon">ঠাকুরগাঁও</option>
-                  <option value="Dhaka">ঢাকা</option>
-                  <option value="Chittagong">চট্টগ্রাম</option>
-                  <option value="Sylhet">সিলেট</option>
-                  <option value="Rajshahi">রাজশাহী</option>
-                  <option value="Khulna">খুলনা</option>
-                  <option value="Barisal">বরিশাল</option>
-                  <option value="Rangpur">রংপুর</option>
+                  {division &&
+                    Object.keys(GEO_DATA[division].districts).map((distKey) => (
+                      <option key={distKey} value={distKey}>
+                        {GEO_DATA[division].districts[distKey].name}
+                      </option>
+                    ))}
                 </select>
               </div>
 
+              {/* Thana */}
+              <div>
+                <label className="block text-[10px] font-bold text-muted uppercase mb-1">থানা (Thana)</label>
+                <select
+                  value={thana}
+                  disabled={!district}
+                  onChange={(e) => handleThanaChange(e.target.value)}
+                  className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg text-xs focus:outline-none focus:border-primary text-foreground disabled:opacity-50 cursor-pointer"
+                >
+                  <option value="">সকল থানা</option>
+                  {division && district &&
+                    Object.keys(GEO_DATA[division].districts[district].thanas).map((thanaKey) => (
+                      <option key={thanaKey} value={thanaKey}>
+                        {GEO_DATA[division].districts[district].thanas[thanaKey].name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {/* Neighborhood */}
+              <div>
+                <label className="block text-[10px] font-bold text-muted uppercase mb-1">মহল্লা / এলাকা</label>
+                <select
+                  value={neighborhood}
+                  disabled={!thana}
+                  onChange={(e) => handleNeighborhoodChange(e.target.value)}
+                  className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg text-xs focus:outline-none focus:border-primary text-foreground disabled:opacity-50 cursor-pointer"
+                >
+                  <option value="">সকল এলাকা</option>
+                  {division && district && thana &&
+                    GEO_DATA[division].districts[district].thanas[thana].neighborhoods.map((nWord) => (
+                      <option key={nWord} value={nWord}>
+                        {nWord}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Row 2: Specs & Sorting */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 pt-1">
               {/* Category */}
               <div>
                 <label className="block text-[10px] font-bold text-muted uppercase mb-1">ক্যাটাগরি</label>
@@ -431,7 +523,7 @@ function RentalsContent() {
                     setIsAiMode(false);
                     setPage(1);
                   }}
-                  className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg text-xs focus:outline-none focus:border-primary text-foreground"
+                  className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg text-xs focus:outline-none focus:border-primary text-foreground cursor-pointer"
                 >
                   <option value="">All Categories</option>
                   <option value="Family">Family</option>
@@ -484,7 +576,7 @@ function RentalsContent() {
                     setIsAiMode(false);
                     setPage(1);
                   }}
-                  className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg text-xs focus:outline-none focus:border-primary text-foreground"
+                  className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg text-xs focus:outline-none focus:border-primary text-foreground cursor-pointer"
                 >
                   <option value="">Any</option>
                   <option value="1">1</option>
@@ -503,7 +595,7 @@ function RentalsContent() {
                     setSort(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg text-xs focus:outline-none focus:border-primary text-foreground"
+                  className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg text-xs focus:outline-none focus:border-primary text-foreground cursor-pointer"
                 >
                   <option value="newest">Newest First</option>
                   <option value="priceAsc">Price: Low to High</option>
@@ -541,20 +633,77 @@ function RentalsContent() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
+                {/* Division */}
+                <div>
+                  <label className="block text-[10px] font-bold text-muted uppercase mb-1">বিভাগ (Division)</label>
+                  <select
+                    value={division}
+                    onChange={(e) => handleDivisionChange(e.target.value)}
+                    className="w-full px-2 py-2 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg"
+                  >
+                    <option value="">সকল বিভাগ</option>
+                    {Object.keys(GEO_DATA).map((divKey) => (
+                      <option key={divKey} value={divKey}>
+                        {GEO_DATA[divKey].name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* District */}
                 <div>
                   <label className="block text-[10px] font-bold text-muted uppercase mb-1">জেলা (District)</label>
                   <select
                     value={district}
-                    onChange={(e) => { setDistrict(e.target.value); setIsAiMode(false); setPage(1); }}
-                    className="w-full px-2 py-2 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg"
+                    disabled={!division}
+                    onChange={(e) => handleDistrictChange(e.target.value)}
+                    className="w-full px-2 py-2 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg disabled:opacity-50"
                   >
                     <option value="">সকল জেলা</option>
-                    <option value="Thakurgaon">ঠাকুরগাঁও</option>
-                    <option value="Dhaka">ঢাকা</option>
-                    <option value="Chittagong">চট্টগ্রাম</option>
-                    <option value="Sylhet">সিলেট</option>
-                    <option value="Rajshahi">রাজশাহী</option>
-                    <option value="Khulna">খুলনা</option>
+                    {division &&
+                      Object.keys(GEO_DATA[division].districts).map((distKey) => (
+                        <option key={distKey} value={distKey}>
+                          {GEO_DATA[division].districts[distKey].name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                {/* Thana */}
+                <div>
+                  <label className="block text-[10px] font-bold text-muted uppercase mb-1">থানা (Thana)</label>
+                  <select
+                    value={thana}
+                    disabled={!district}
+                    onChange={(e) => handleThanaChange(e.target.value)}
+                    className="w-full px-2 py-2 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg disabled:opacity-50"
+                  >
+                    <option value="">সকল থানা</option>
+                    {division && district &&
+                      Object.keys(GEO_DATA[division].districts[district].thanas).map((thanaKey) => (
+                        <option key={thanaKey} value={thanaKey}>
+                          {GEO_DATA[division].districts[district].thanas[thanaKey].name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                {/* Neighborhood */}
+                <div>
+                  <label className="block text-[10px] font-bold text-muted uppercase mb-1">মহল্লা / এলাকা</label>
+                  <select
+                    value={neighborhood}
+                    disabled={!thana}
+                    onChange={(e) => handleNeighborhoodChange(e.target.value)}
+                    className="w-full px-2 py-2 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg disabled:opacity-50"
+                  >
+                    <option value="">সকল এলাকা</option>
+                    {division && district && thana &&
+                      GEO_DATA[division].districts[district].thanas[thana].neighborhoods.map((nWord) => (
+                        <option key={nWord} value={nWord}>
+                          {nWord}
+                        </option>
+                      ))}
                   </select>
                 </div>
 
@@ -779,3 +928,50 @@ export default function ExploreRentalsPage() {
     </div>
   );
 }
+
+// Division, District, Thana and Neighborhood static cascading configuration
+const GEO_DATA: {
+  [division: string]: {
+    name: string;
+    districts: {
+      [district: string]: {
+        name: string;
+        thanas: {
+          [thana: string]: {
+            name: string;
+            neighborhoods: string[];
+          };
+        };
+      };
+    };
+  };
+} = {
+  'Dhaka': {
+    name: 'ঢাকা বিভাগ',
+    districts: {
+      'Dhaka': {
+        name: 'ঢাকা জেলা',
+        thanas: {
+          'Dhanmondi': { name: 'ধানমন্ডি', neighborhoods: ['Dhanmondi R/A', 'Sobhanbagh'] },
+          'Mirpur': { name: 'মিরপুর', neighborhoods: ['Mirpur 1', 'Mirpur 10', 'Mirpur 11', 'Mirpur 12'] },
+          'Uttara': { name: 'উত্তরা', neighborhoods: ['Uttara Sector 1', 'Uttara Sector 3', 'Uttara Sector 5'] },
+          'Hazaribagh': { name: 'হাজারীবাগ', neighborhoods: ['Hazaribagh Tanners', 'Jigatola'] }
+        }
+      }
+    }
+  },
+  'Rangpur': {
+    name: 'রংপুর বিভাগ',
+    districts: {
+      'Thakurgaon': {
+        name: 'ঠাকুরগাঁও জেলা',
+        thanas: {
+          'Thakurgaon Sadar': {
+            name: 'ঠাকুরগাঁও সদর',
+            neighborhoods: ['Masterpara', 'Sarkarpara', 'Gobindanagar', 'Basirpara', 'Hazipara']
+          }
+        }
+      }
+    }
+  }
+};
