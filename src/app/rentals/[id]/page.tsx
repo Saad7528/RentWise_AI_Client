@@ -9,7 +9,7 @@ import { api } from '@/lib/api';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PropertyCard, PropertyData } from '@/components/PropertyCard';
-import { MapPin, Bed, Home, Phone, Share2, Calendar, ShieldCheck, Check, MessageSquare } from 'lucide-react';
+import { MapPin, Bed, Home, Phone, Share2, Calendar, ShieldCheck, Check, MessageSquare, Navigation } from 'lucide-react';
 
 // Dynamically import DetailMap to bypass window undefined errors on SSR
 const DetailMap = dynamic(() => import('@/components/DetailMap'), {
@@ -298,11 +298,22 @@ export default function PropertyDetailsPage() {
               </h3>
               
               {property.location?.coordinates && (
-                <DetailMap
-                  lat={property.location.coordinates[1]}
-                  lng={property.location.coordinates[0]}
-                  address={property.address}
-                />
+                <div className="space-y-3">
+                  <DetailMap
+                    lat={property.location.coordinates[1]}
+                    lng={property.location.coordinates[0]}
+                    address={property.address}
+                  />
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${property.location.coordinates[1]},${property.location.coordinates[0]}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-border text-foreground hover:text-primary text-xs font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Navigation className="h-3.5 w-3.5 text-primary" />
+                    <span>গুগল ম্যাপসে ডিরেকশন (Get Directions)</span>
+                  </a>
+                </div>
               )}
             </div>
 
