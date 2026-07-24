@@ -1,10 +1,17 @@
 'use client';
 
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
+
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { Home, Sparkles, LogIn, ShieldAlert, Chrome, AlertCircle } from 'lucide-react';
+import { api } from '@/lib/api';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 
@@ -17,6 +24,69 @@ function LoginContent() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Load Google GIS script
+  useEffect(() => {
+    // Check if script is already loaded
+    if (document.getElementById('google-gsi-script')) {
+      initializeGoogleButton();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.id = 'google-gsi-script';
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      initializeGoogleButton();
+    };
+  }, []);
+
+  const initializeGoogleButton = () => {
+    if (window.google) {
+      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '686079964181-sd96omj0gqdj9b70ccm6udgtd92hjvk2.apps.googleusercontent.com';
+      
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleGoogleCredentialResponse,
+      });
+
+      window.google.accounts.id.renderButton(
+        document.getElementById('google-signin-btn-container'),
+        { 
+          theme: 'outline', 
+          size: 'large', 
+          width: 382,
+          shape: 'rectangular',
+          text: 'signin_with',
+          locale: 'bn'
+        }
+      );
+    }
+  };
+
+  const handleGoogleCredentialResponse = async (response: any) => {
+    try {
+      setSubmitting(true);
+      setError('');
+      
+      const res = await api.post('/api/auth/google', { credential: response.credential });
+      
+      if (res.data && res.data.user) {
+        await refreshUser();
+        const redirect = searchParams.get('redirect') || '/';
+        router.push(redirect);
+      }
+    } catch (err: any) {
+      console.error('Google Auth login failed:', err);
+      setError('গুগল সাইন-ইন প্রসেস করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   // If already logged in, redirect to manage page or home page
   useEffect(() => {
@@ -159,14 +229,8 @@ function LoginContent() {
           <span className="absolute bg-card px-3 text-xs text-muted uppercase tracking-widest font-bold">Or</span>
         </div>
 
-        <button
-          onClick={() => handleDemoLogin('tenant')}
-          disabled={submitting}
-          className="w-full border border-border hover:bg-slate-50 dark:hover:bg-slate-900 text-sm font-semibold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer mb-6"
-        >
-          <Chrome className="h-4.5 w-4.5 text-blue-500" />
-          <span>Google দিয়ে সাইন-ইন করুন</span>
-        </button>
+        {/* Google Native OAuth Button Container */}
+        <div className="flex justify-center mb-6 w-full" id="google-signin-btn-container"></div>
 
         {/* Demo Fast Login Area */}
         <div className="bg-slate-50 dark:bg-slate-900 p-4 border border-border rounded-xl space-y-3">
