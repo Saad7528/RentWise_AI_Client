@@ -9,7 +9,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PropertyCard, PropertyData } from '@/components/PropertyCard';
 import { SkeletonLoader } from '@/components/SkeletonLoader';
-import { Search, Sparkles, Filter, SlidersHorizontal, Map, Grid, ChevronLeft, ChevronRight, X, AlertCircle, Mic, MicOff } from 'lucide-react';
+import { Search, Sparkles, Filter, SlidersHorizontal, Map, Grid, ChevronLeft, ChevronRight, X, AlertCircle, Mic, MicOff, MapPin } from 'lucide-react';
 
 // Dynamically import properties map to prevent window undefined SSR errors
 const PropertiesMap = dynamic(() => import('@/components/PropertiesMap'), {
@@ -42,6 +42,12 @@ function RentalsContent() {
   // View States
   const [showMap, setShowMap] = useState(true);
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
+
+  // District / GPS Radius Search States
+  const [district, setDistrict] = useState('');
+  const [pinnedLat, setPinnedLat] = useState<number | null>(null);
+  const [pinnedLng, setPinnedLng] = useState<number | null>(null);
+  const [searchRadius, setSearchRadius] = useState('5000'); // default 5km
 
   // Voice search states
   const [isAiVoiceListening, setIsAiVoiceListening] = useState(false);
@@ -174,7 +180,7 @@ function RentalsContent() {
 
   // Query 1: Regular filtering query
   const { data: regularData, isLoading: isRegularLoading } = useQuery({
-    queryKey: ['properties', search, category, rentMin, rentMax, bedrooms, bathrooms, isBachelorAllowed, sort, page],
+    queryKey: ['properties', search, category, rentMin, rentMax, bedrooms, bathrooms, isBachelorAllowed, sort, page, district, pinnedLat, pinnedLng, searchRadius],
     queryFn: async () => {
       const params: any = { page, limit: 8, sort };
       if (search) params.search = search;
@@ -184,6 +190,12 @@ function RentalsContent() {
       if (bedrooms) params.bedrooms = bedrooms;
       if (bathrooms) params.bathrooms = bathrooms;
       if (isBachelorAllowed) params.isBachelorAllowed = 'true';
+      if (district) params.district = district;
+      if (pinnedLat && pinnedLng) {
+        params.lat = pinnedLat;
+        params.lng = pinnedLng;
+        params.radius = searchRadius;
+      }
 
       const res = await api.get('/api/properties', { params });
       return res.data;
@@ -243,6 +255,9 @@ function RentalsContent() {
     setBathrooms('');
     setIsBachelorAllowed(false);
     setSort('newest');
+    setDistrict('');
+    setPinnedLat(null);
+    setPinnedLng(null);
     setPage(1);
     handleResetAiMode();
   };
@@ -381,7 +396,31 @@ function RentalsContent() {
               </button>
             </div>
             
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {/* District */}
+              <div>
+                <label className="block text-[10px] font-bold text-muted uppercase mb-1">জেলা (District)</label>
+                <select
+                  value={district}
+                  onChange={(e) => {
+                    setDistrict(e.target.value);
+                    setIsAiMode(false);
+                    setPage(1);
+                  }}
+                  className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg text-xs focus:outline-none focus:border-primary text-foreground"
+                >
+                  <option value="">সকল জেলা</option>
+                  <option value="Thakurgaon">ঠাকুরগাঁও</option>
+                  <option value="Dhaka">ঢাকা</option>
+                  <option value="Chittagong">চট্টগ্রাম</option>
+                  <option value="Sylhet">সিলেট</option>
+                  <option value="Rajshahi">রাজশাহী</option>
+                  <option value="Khulna">খুলনা</option>
+                  <option value="Barisal">বরিশাল</option>
+                  <option value="Rangpur">রংপুর</option>
+                </select>
+              </div>
+
               {/* Category */}
               <div>
                 <label className="block text-[10px] font-bold text-muted uppercase mb-1">ক্যাটাগরি</label>
@@ -503,6 +542,23 @@ function RentalsContent() {
 
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
+                  <label className="block text-[10px] font-bold text-muted uppercase mb-1">জেলা (District)</label>
+                  <select
+                    value={district}
+                    onChange={(e) => { setDistrict(e.target.value); setIsAiMode(false); setPage(1); }}
+                    className="w-full px-2 py-2 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg"
+                  >
+                    <option value="">সকল জেলা</option>
+                    <option value="Thakurgaon">ঠাকুরগাঁও</option>
+                    <option value="Dhaka">ঢাকা</option>
+                    <option value="Chittagong">চট্টগ্রাম</option>
+                    <option value="Sylhet">সিলেট</option>
+                    <option value="Rajshahi">রাজশাহী</option>
+                    <option value="Khulna">খুলনা</option>
+                  </select>
+                </div>
+
+                <div>
                   <label className="block text-[10px] font-bold text-muted uppercase mb-1">ক্যাটাগরি</label>
                   <select
                     value={category}
@@ -575,6 +631,47 @@ function RentalsContent() {
           )}
 
           {/* Cards Grid */}
+          {pinnedLat && pinnedLng && (
+            <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 animate-fade-in">
+              <div className="flex items-center gap-2.5 text-xs">
+                <MapPin className="h-5 w-5 text-primary shrink-0" />
+                <div>
+                  <span className="font-extrabold text-foreground">ম্যাপে পিন করা লোকেশনের কাছাকাছি খুঁজছেন</span>
+                  <p className="text-[10px] text-muted mt-0.5">স্থানাঙ্ক: {pinnedLat.toFixed(4)}, {pinnedLng.toFixed(4)}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 self-stretch sm:self-auto justify-between sm:justify-start">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-muted uppercase tracking-wider">ব্যাসার্ধ:</span>
+                  <select
+                    value={searchRadius}
+                    onChange={(e) => {
+                      setSearchRadius(e.target.value);
+                      setPage(1);
+                    }}
+                    className="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-border rounded-lg text-xs focus:outline-none cursor-pointer"
+                  >
+                    <option value="2000">২ কিমি</option>
+                    <option value="5000">৫ কিমি</option>
+                    <option value="10000">১০ কিমি</option>
+                    <option value="20000">২০ কিমি</option>
+                  </select>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    setPinnedLat(null);
+                    setPinnedLng(null);
+                  }}
+                  className="bg-red-500 hover:bg-red-600 text-white font-bold text-[10px] px-3 py-1.5 rounded-xl cursor-pointer transition-colors"
+                >
+                  পিন মুছুন
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between mb-4 mt-2">
             <span className="text-[10px] sm:text-xs font-extrabold text-muted uppercase tracking-wider">
               {isAiMode ? '✨ এআই রিকমেন্ডেশন ফলাফল' : '🔍 অনুসন্ধান ফলাফল'}
@@ -643,7 +740,21 @@ function RentalsContent() {
         {/* Right Side: Sticky Map View */}
         {showMap && (
           <aside className="lg:col-span-4 xl:col-span-4 h-[400px] lg:h-full lg:sticky lg:top-16 border-t lg:border-t-0 lg:border-l border-border bg-slate-50 dark:bg-slate-900/50">
-            <PropertiesMap properties={propertiesList} />
+            <PropertiesMap 
+              properties={propertiesList} 
+              pinnedLat={pinnedLat}
+              pinnedLng={pinnedLng}
+              onPinLocation={(lat, lng) => {
+                setPinnedLat(lat);
+                setPinnedLng(lng);
+                setIsAiMode(false);
+                setPage(1);
+              }}
+              onClearPin={() => {
+                setPinnedLat(null);
+                setPinnedLng(null);
+              }}
+            />
           </aside>
         )}
 

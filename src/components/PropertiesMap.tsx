@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { PropertyData } from './PropertyCard';
 
@@ -16,16 +16,43 @@ const fixMarkerIcon = () => {
   });
 };
 
+// Custom Red icon for search pin point
+const redMarkerIcon = typeof window !== 'undefined' ? L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+}) : null;
+
 interface PropertiesMapProps {
   properties: PropertyData[];
   center?: [number, number];
   zoom?: number;
+  pinnedLat?: number | null;
+  pinnedLng?: number | null;
+  onPinLocation?: (lat: number, lng: number) => void;
+  onClearPin?: () => void;
+}
+
+// Sub-component to fly map view center
+function ChangeMapView({ center }: { center: [number, number] }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(center, map.getZoom());
+  }, [center, map]);
+  return null;
 }
 
 export default function PropertiesMap({
   properties,
   center = [23.7808875, 90.4228516], // Default Dhaka center
   zoom = 12,
+  pinnedLat = null,
+  pinnedLng = null,
+  onPinLocation,
+  onClearPin,
 }: PropertiesMapProps) {
   
   useEffect(() => {
@@ -33,12 +60,27 @@ export default function PropertiesMap({
   }, []);
 
   // Compute map center dynamic fallback if properties list is populated
-  const dynamicCenter: [number, number] = properties.length > 0 
-    ? [
-        properties[0].location.coordinates[1], // Latitude
-        properties[0].location.coordinates[0], // Longitude
-      ]
-    : center;
+  const dynamicCenter: [number, number] = pinnedLat && pinnedLng
+    ? [pinnedLat, pinnedLng]
+    : properties.length > 0 
+      ? [
+          properties[0].location.coordinates[1], // Latitude
+          properties[0].location.coordinates[0], // Longitude
+        ]
+      : center;
+
+  // Custom click capture component
+  function MapClickHandler() {
+    useMapEvents({
+      click(e) {
+        if (onPinLocation) {
+          const { lat, lng } = e.latlng;
+          onPinLocation(lat, lng);
+        }
+      },
+    });
+    return null;
+  }
 
   return (
     <div className="w-full h-full rounded-2xl overflow-hidden border border-border shadow-sm relative">
@@ -48,10 +90,31 @@ export default function PropertiesMap({
         scrollWheelZoom={true}
         className="w-full h-full min-h-[350px] lg:min-h-full z-10"
       >
+        <ChangeMapView center={dynamicCenter} />
+        <MapClickHandler />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
+        {/* Render Pinned Coordinates Search Pin */}
+        {pinnedLat && pinnedLng && redMarkerIcon && (
+          <Marker position={[pinnedLat, pinnedLng]} icon={redMarkerIcon}>
+            <Popup>
+              <div className="text-center p-1 space-y-2">
+                <p className="text-xs font-bold text-foreground">এখানে পিন করা হয়েছে</p>
+                {onClearPin && (
+                  <button
+                    onClick={onClearPin}
+                    className="text-[10px] bg-red-500 hover:bg-red-600 text-white font-bold px-2 py-1 rounded cursor-pointer transition-colors"
+                  >
+                    পিন মুছুন
+                  </button>
+                )}
+              </div>
+            </Popup>
+          </Marker>
+        )}
 
         {properties.map((property) => {
           const lat = property.location.coordinates[1];
@@ -99,6 +162,9 @@ export default function PropertiesMap({
           );
         })}
       </MapContainer>
+      <div className="absolute bottom-2 left-2 z-20 bg-card/90 backdrop-blur px-2.5 py-1.5 rounded-lg border border-border text-[9px] font-semibold text-muted max-w-[200px]">
+        ম্যাপে ক্লিক করে যেকোনো জায়গায় পিন ড্রপ করে ওই এলাকার বাসা খুঁজুন
+      </div>
     </div>
   );
 }
