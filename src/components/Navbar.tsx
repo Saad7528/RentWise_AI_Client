@@ -90,18 +90,19 @@ export const Navbar: React.FC = () => {
               user ? (
                 <div className="flex items-center gap-3">
                   {/* User Profile Info */}
-                  <div className="flex items-center gap-2">
+                  {/* User Profile Info */}
+                  <Link href="/profile" className="flex items-center gap-2 hover:opacity-85 transition-opacity cursor-pointer group">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={user.image || 'https://api.dicebear.com/7.x/initials/svg?seed=' + user.name}
                       alt={user.name}
-                      className="h-8 w-8 rounded-full border border-primary object-cover"
+                      className="h-8 w-8 rounded-full border border-primary object-cover group-hover:ring-2 group-hover:ring-primary/50 transition-all"
                     />
                     <div className="text-left hidden lg:block">
-                      <p className="text-xs font-semibold text-foreground leading-none">{user.name.split(' ')[0]}</p>
+                      <p className="text-xs font-semibold text-foreground leading-none group-hover:text-primary transition-colors">{user.name.split(' ')[0]}</p>
                       <span className="text-[10px] text-muted capitalize leading-none">{user.role.toLowerCase()}</span>
                     </div>
-                  </div>
+                  </Link>
                   {/* Logout Button */}
                   <button
                     onClick={() => logout()}
@@ -176,6 +177,14 @@ export const Navbar: React.FC = () => {
           {user && (
             <>
               <hr className="border-border my-2" />
+              <Link
+                href="/profile"
+                onClick={toggleMenu}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-muted hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-colors"
+              >
+                <User className="h-4 w-4" />
+                Edit Profile
+              </Link>
               <Link
                 href="/items/add"
                 onClick={toggleMenu}

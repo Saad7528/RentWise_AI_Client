@@ -11,6 +11,7 @@ export interface UserProfile {
   role: 'USER' | 'ADMIN';
   image?: string;
   phone?: string;
+  address?: string;
 }
 
 interface AuthContextType {
@@ -19,6 +20,7 @@ interface AuthContextType {
   loginDemo: (role: 'landlord' | 'tenant' | 'admin') => Promise<UserProfile>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateProfile: (data: { name: string; phone?: string; address?: string; image?: string }) => Promise<UserProfile>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,6 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           role: u.role,
           image: u.image,
           phone: u.phone,
+          address: u.address,
         });
       } else {
         setUser(null);
@@ -86,8 +89,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateProfile = async (data: { name: string; phone?: string; address?: string; image?: string }) => {
+    try {
+      setLoading(true);
+      const res = await api.put('/api/auth/update', data);
+      if (res.data && res.data.user) {
+        setUser(res.data.user);
+        return res.data.user;
+      }
+      throw new Error('Invalid server response during profile update');
+    } catch (error: any) {
+      console.error('Profile update failed:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, loginDemo, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, loginDemo, logout, refreshUser, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
