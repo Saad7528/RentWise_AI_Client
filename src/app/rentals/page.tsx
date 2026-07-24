@@ -9,7 +9,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PropertyCard, PropertyData } from '@/components/PropertyCard';
 import { SkeletonLoader } from '@/components/SkeletonLoader';
-import { Search, Sparkles, Filter, SlidersHorizontal, Map, Grid, ChevronLeft, ChevronRight, X, AlertCircle } from 'lucide-react';
+import { Search, Sparkles, Filter, SlidersHorizontal, Map, Grid, ChevronLeft, ChevronRight, X, AlertCircle, Mic, MicOff } from 'lucide-react';
 
 // Dynamically import properties map to prevent window undefined SSR errors
 const PropertiesMap = dynamic(() => import('@/components/PropertiesMap'), {
@@ -42,6 +42,120 @@ function RentalsContent() {
   // View States
   const [showMap, setShowMap] = useState(true);
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
+
+  // Voice search states
+  const [isAiVoiceListening, setIsAiVoiceListening] = useState(false);
+  const [interimAiText, setInterimAiText] = useState('');
+  const aiVoiceRecognitionRef = React.useRef<any>(null);
+  const isAiVoiceListeningRef = React.useRef(isAiVoiceListening);
+  const interimAiTextRef = React.useRef(interimAiText);
+
+  // Sync refs with states
+  useEffect(() => {
+    isAiVoiceListeningRef.current = isAiVoiceListening;
+  }, [isAiVoiceListening]);
+
+  useEffect(() => {
+    interimAiTextRef.current = interimAiText;
+  }, [interimAiText]);
+
+  // Clean up listening on unmount
+  useEffect(() => {
+    return () => {
+      if (aiVoiceRecognitionRef.current) {
+        aiVoiceRecognitionRef.current.stop();
+      }
+    };
+  }, []);
+
+  const toggleAiVoiceListening = () => {
+    if (isAiVoiceListening) {
+      if (aiVoiceRecognitionRef.current) {
+        aiVoiceRecognitionRef.current.stop();
+      }
+      setIsAiVoiceListening(false);
+      // Flush remaining interim text
+      if (interimAiTextRef.current.trim()) {
+        setAiInput((prev) => {
+          const cleanPrev = prev.trim();
+          return cleanPrev + (cleanPrev ? ' ' : '') + interimAiTextRef.current.trim();
+        });
+      }
+      setInterimAiText('');
+    } else {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("আপনার ব্রাউজারে স্পিচ-টু-টেক্সট সাপোর্ট করে না। অনুগ্রহ করে ক্রোম ব্রাউজার ব্যবহার করুন।");
+        return;
+      }
+
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = 'bn-BD'; // Support Bangla voice query
+
+      rec.onstart = () => {
+        setIsAiVoiceListening(true);
+      };
+
+      rec.onend = () => {
+        if (isAiVoiceListeningRef.current) {
+          setTimeout(() => {
+            try {
+              if (isAiVoiceListeningRef.current) {
+                rec.start();
+              }
+            } catch (e) {
+              console.error("Voice search restart failed:", e);
+            }
+          }, 300);
+        } else {
+          setIsAiVoiceListening(false);
+          setInterimAiText('');
+        }
+      };
+
+      rec.onerror = (e: any) => {
+        console.error("Voice search API error:", e);
+        if (e.error === 'not-allowed') {
+          alert("মাইক্রোফোন ব্যবহারের অনুমতি দিন।");
+          setIsAiVoiceListening(false);
+          setInterimAiText('');
+        }
+      };
+
+      rec.onresult = (event: any) => {
+        let finalTranscript = '';
+        let currentInterim = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            currentInterim += transcript;
+          }
+        }
+
+        if (finalTranscript) {
+          setAiInput((prev) => {
+            const cleanPrev = prev.trim();
+            return cleanPrev + (cleanPrev ? ' ' : '') + finalTranscript.trim();
+          });
+          setInterimAiText('');
+        } else {
+          setInterimAiText(currentInterim);
+        }
+      };
+
+      try {
+        rec.start();
+        aiVoiceRecognitionRef.current = rec;
+      } catch (err) {
+        console.error("Failed to start voice search:", err);
+      }
+    }
+  };
 
   // Synchronize state with URL params on load
   useEffect(() => {
@@ -172,10 +286,32 @@ function RentalsContent() {
               <input
                 type="text"
                 placeholder="এআইকে বলুন: 'ধানমন্ডিতে গ্যাসের সুবিধাসহ ২০ হাজারের বাসা'"
-                value={aiInput}
-                onChange={(e) => setAiInput(e.target.value)}
+                value={aiInput + (interimAiText ? (aiInput.trim() ? ' ' : '') + interimAiText : '')}
+                onChange={(e) => {
+                  setAiInput(e.target.value);
+                  setInterimAiText('');
+                }}
                 className="w-full bg-transparent border-none text-xs text-foreground focus:outline-none placeholder:text-muted/80"
               />
+              
+              {/* Mic Icon Trigger */}
+              <button
+                type="button"
+                onClick={toggleAiVoiceListening}
+                className={`p-1 rounded cursor-pointer shrink-0 transition-colors ${
+                  isAiVoiceListening 
+                    ? 'text-red-500 hover:bg-red-500/10 animate-pulse' 
+                    : 'text-secondary hover:bg-secondary/10'
+                }`}
+                title={isAiVoiceListening ? 'ভয়েস বন্ধ করুন' : 'ভয়েসে বলুন'}
+              >
+                {isAiVoiceListening ? (
+                  <MicOff className="h-4 w-4 text-red-500" />
+                ) : (
+                  <Mic className="h-4 w-4 text-secondary" />
+                )}
+              </button>
+
               {isAiMode && (
                 <button
                   type="button"
