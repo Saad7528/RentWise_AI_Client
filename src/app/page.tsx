@@ -8,13 +8,270 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PropertyCard, PropertyData } from '@/components/PropertyCard';
 import { SkeletonLoader } from '@/components/SkeletonLoader';
-import { Search, Sparkles, Building, Users, Star, HelpCircle, ShieldCheck, TrendingUp } from 'lucide-react';
+import { Search, Sparkles, Building, Users, Star, HelpCircle, ShieldCheck, TrendingUp, Mic, MicOff } from 'lucide-react';
 
 export default function HomePage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [aiSearchQuery, setAiSearchQuery] = useState('');
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+
+  // Submit action animation states
+  const [isSubmittingRegular, setIsSubmittingRegular] = useState(false);
+  const [isSubmittingAi, setIsSubmittingAi] = useState(false);
+
+  // AI Voice search states
+  const [isAiVoiceListening, setIsAiVoiceListening] = useState(false);
+  const [interimAiText, setInterimAiText] = useState('');
+  const aiVoiceRecognitionRef = React.useRef<any>(null);
+  const isAiVoiceListeningRef = React.useRef(isAiVoiceListening);
+  const interimAiTextRef = React.useRef(interimAiText);
+
+  // Regular Voice search states
+  const [isRegularVoiceListening, setIsRegularVoiceListening] = useState(false);
+  const [interimRegularText, setInterimRegularText] = useState('');
+  const regularVoiceRecognitionRef = React.useRef<any>(null);
+  const isRegularVoiceListeningRef = React.useRef(isRegularVoiceListening);
+  const interimRegularTextRef = React.useRef(interimRegularText);
+
+  // Sync refs with states
+  React.useEffect(() => {
+    isAiVoiceListeningRef.current = isAiVoiceListening;
+  }, [isAiVoiceListening]);
+
+  React.useEffect(() => {
+    interimAiTextRef.current = interimAiText;
+  }, [interimAiText]);
+
+  React.useEffect(() => {
+    isRegularVoiceListeningRef.current = isRegularVoiceListening;
+  }, [isRegularVoiceListening]);
+
+  React.useEffect(() => {
+    interimRegularTextRef.current = interimRegularText;
+  }, [interimRegularText]);
+
+  // Clean up listening on unmount
+  React.useEffect(() => {
+    return () => {
+      if (aiVoiceRecognitionRef.current) aiVoiceRecognitionRef.current.stop();
+      if (regularVoiceRecognitionRef.current) regularVoiceRecognitionRef.current.stop();
+    };
+  }, []);
+
+  const triggerAiSearchAnimation = () => {
+    setIsSubmittingAi(true);
+    setTimeout(() => {
+      setIsSubmittingAi(false);
+    }, 450);
+  };
+
+  const triggerRegularSearchAnimation = () => {
+    setIsSubmittingRegular(true);
+    setTimeout(() => {
+      setIsSubmittingRegular(false);
+    }, 450);
+  };
+
+  const toggleAiVoiceListening = () => {
+    if (isAiVoiceListening) {
+      if (aiVoiceRecognitionRef.current) {
+        aiVoiceRecognitionRef.current.stop();
+      }
+      setIsAiVoiceListening(false);
+      
+      let finalInput = aiSearchQuery;
+      if (interimAiTextRef.current.trim()) {
+        const cleanPrev = aiSearchQuery.trim();
+        finalInput = cleanPrev + (cleanPrev ? ' ' : '') + interimAiTextRef.current.trim();
+        setAiSearchQuery(finalInput);
+      }
+      setInterimAiText('');
+
+      // Auto trigger AI Search navigation on stop
+      if (finalInput.trim()) {
+        setTimeout(() => {
+          triggerAiSearchAnimation();
+          router.push(`/rentals?aiQuery=${encodeURIComponent(finalInput)}`);
+        }, 120);
+      }
+    } else {
+      // Stop regular voice search if active
+      if (isRegularVoiceListeningRef.current) {
+        toggleRegularVoiceListening();
+      }
+
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("আপনার ব্রাউজারে স্পিচ-টু-টেক্সট সাপোর্ট করে না। অনুগ্রহ করে ক্রোম ব্রাউজার ব্যবহার করুন।");
+        return;
+      }
+
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = 'bn-BD';
+
+      rec.onstart = () => {
+        setIsAiVoiceListening(true);
+      };
+
+      rec.onend = () => {
+        if (isAiVoiceListeningRef.current) {
+          setTimeout(() => {
+            try {
+              if (isAiVoiceListeningRef.current) rec.start();
+            } catch (e) {
+              console.error("Voice search restart failed:", e);
+            }
+          }, 300);
+        } else {
+          setIsAiVoiceListening(false);
+          setInterimAiText('');
+        }
+      };
+
+      rec.onerror = (e: any) => {
+        console.error("Voice search API error:", e);
+        if (e.error === 'not-allowed') {
+          alert("মাইক্রোফোন ব্যবহারের অনুমতি দিন।");
+          setIsAiVoiceListening(false);
+          setInterimAiText('');
+        }
+      };
+
+      rec.onresult = (event: any) => {
+        let finalTranscript = '';
+        let currentInterim = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            currentInterim += transcript;
+          }
+        }
+
+        if (finalTranscript) {
+          setAiSearchQuery((prev) => {
+            const cleanPrev = prev.trim();
+            return cleanPrev + (cleanPrev ? ' ' : '') + finalTranscript.trim();
+          });
+          setInterimAiText('');
+        } else {
+          setInterimAiText(currentInterim);
+        }
+      };
+
+      try {
+        rec.start();
+        aiVoiceRecognitionRef.current = rec;
+      } catch (err) {
+        console.error("Failed to start voice search:", err);
+      }
+    }
+  };
+
+  const toggleRegularVoiceListening = () => {
+    if (isRegularVoiceListening) {
+      if (regularVoiceRecognitionRef.current) {
+        regularVoiceRecognitionRef.current.stop();
+      }
+      setIsRegularVoiceListening(false);
+
+      let finalSearch = searchQuery;
+      if (interimRegularTextRef.current.trim()) {
+        const cleanPrev = searchQuery.trim();
+        finalSearch = cleanPrev + (cleanPrev ? ' ' : '') + interimRegularTextRef.current.trim();
+        setSearchQuery(finalSearch);
+      }
+      setInterimRegularText('');
+      
+      // Auto trigger regular search navigation on stop
+      if (finalSearch.trim()) {
+        setTimeout(() => {
+          triggerRegularSearchAnimation();
+          router.push(`/rentals?search=${encodeURIComponent(finalSearch)}`);
+        }, 120);
+      }
+    } else {
+      // Stop AI voice search if active
+      if (isAiVoiceListeningRef.current) {
+        toggleAiVoiceListening();
+      }
+
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("আপনার ব্রাউজারে স্পিচ-টু-টেক্সট সাপোর্ট করে না। অনুগ্রহ করে ক্রোম ব্রাউজার ব্যবহার করুন।");
+        return;
+      }
+
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = 'bn-BD';
+
+      rec.onstart = () => {
+        setIsRegularVoiceListening(true);
+      };
+
+      rec.onend = () => {
+        if (isRegularVoiceListeningRef.current) {
+          setTimeout(() => {
+            try {
+              if (isRegularVoiceListeningRef.current) rec.start();
+            } catch (e) {
+              console.error("Regular voice search restart failed:", e);
+            }
+          }, 300);
+        } else {
+          setIsRegularVoiceListening(false);
+          setInterimRegularText('');
+        }
+      };
+
+      rec.onerror = (e: any) => {
+        console.error("Regular voice search API error:", e);
+        if (e.error === 'not-allowed') {
+          alert("মাইক্রোফোন ব্যবহারের অনুমতি দিন।");
+          setIsRegularVoiceListening(false);
+          setInterimRegularText('');
+        }
+      };
+
+      rec.onresult = (event: any) => {
+        let finalTranscript = '';
+        let currentInterim = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            currentInterim += transcript;
+          }
+        }
+
+        if (finalTranscript) {
+          setSearchQuery((prev) => {
+            const cleanPrev = prev.trim();
+            return cleanPrev + (cleanPrev ? ' ' : '') + finalTranscript.trim();
+          });
+          setInterimRegularText('');
+        } else {
+          setInterimRegularText(currentInterim);
+        }
+      };
+
+      try {
+        rec.start();
+        regularVoiceRecognitionRef.current = rec;
+      } catch (err) {
+        console.error("Failed to start regular voice search:", err);
+      }
+    }
+  };
 
   // Fetch 4 featured properties for home page
   const { data, isLoading } = useQuery({
@@ -87,20 +344,46 @@ export default function HomePage() {
 
           {/* Standard Search Bar Overlay */}
           <div className="glass p-2.5 rounded-2xl shadow-lg border border-border/80 max-w-2xl mx-auto mb-4">
-            <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-2">
-              <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-card rounded-xl border border-border">
+            <form onSubmit={(e) => { e.preventDefault(); handleSearchSubmit(e); }} className="flex flex-col sm:flex-row gap-2">
+              <div className={`flex-1 flex items-center gap-2 px-3 py-2 bg-card rounded-xl border transition-all ${
+                isRegularVoiceListening 
+                  ? 'border-red-500 ring-2 ring-red-500/20 bg-red-500/5' 
+                  : 'border-border'
+              }`}>
                 <Search className="h-5 w-5 text-muted shrink-0" />
                 <input
                   type="text"
                   placeholder="এলাকা বা বাসার নাম দিয়ে খুঁজুন... (উদা: Dhanmondi, Mirpur)"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  value={searchQuery + (interimRegularText ? (searchQuery.trim() ? ' ' : '') + interimRegularText : '')}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setInterimRegularText('');
+                  }}
                   className="w-full bg-transparent border-none text-sm text-foreground focus:outline-none placeholder:text-muted/60"
                 />
+                {/* Mic Icon Trigger */}
+                <button
+                  type="button"
+                  onClick={toggleRegularVoiceListening}
+                  className={`p-1 rounded cursor-pointer shrink-0 transition-colors ${
+                    isRegularVoiceListening 
+                      ? 'text-red-500 hover:bg-red-500/10 animate-pulse' 
+                      : 'text-muted hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                  title={isRegularVoiceListening ? 'ভয়েস বন্ধ করুন' : 'ভয়েসে বলুন'}
+                >
+                  {isRegularVoiceListening ? (
+                    <MicOff className="h-4.5 w-4.5 text-red-500" />
+                  ) : (
+                    <Mic className="h-4.5 w-4.5 text-muted" />
+                  )}
+                </button>
               </div>
               <button
                 type="submit"
-                className="bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-6 py-3 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                className={`bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-6 py-3 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer transform ${
+                  isSubmittingRegular ? 'scale-95 bg-primary-hover ring-2 ring-primary/40' : ''
+                }`}
               >
                 <span>Search Properties</span>
               </button>
@@ -109,16 +392,45 @@ export default function HomePage() {
 
           {/* Intelligent AI Prompt Search Line */}
           <form onSubmit={handleAiSearchSubmit} className="flex items-center justify-center gap-2 max-w-2xl mx-auto">
-            <div className="flex items-center gap-2 w-full px-4 py-2 bg-secondary/5 rounded-xl border border-secondary/20 hover:border-secondary/40 transition-all">
+            <div className={`flex items-center gap-2 w-full px-4 py-2 bg-secondary/5 rounded-xl border transition-all ${
+              isAiVoiceListening 
+                ? 'border-red-500 ring-2 ring-red-500/20 bg-red-500/5' 
+                : 'border-secondary/20 hover:border-secondary/40'
+            }`}>
               <Sparkles className="h-4 w-4 text-secondary shrink-0" />
               <input
                 type="text"
                 placeholder="এআই সার্চ: 'ধানমন্ডিতে ১৫ হাজারের মধ্যে ব্যাচেলর বাসা'"
-                value={aiSearchQuery}
-                onChange={(e) => setAiSearchQuery(e.target.value)}
+                value={aiSearchQuery + (interimAiText ? (aiSearchQuery.trim() ? ' ' : '') + interimAiText : '')}
+                onChange={(e) => {
+                  setAiSearchQuery(e.target.value);
+                  setInterimAiText('');
+                }}
                 className="w-full bg-transparent border-none text-xs text-foreground focus:outline-none placeholder:text-muted/80"
               />
-              <button type="submit" className="text-xs font-bold text-secondary hover:text-secondary-hover shrink-0 cursor-pointer">
+              {/* Mic Icon Trigger */}
+              <button
+                type="button"
+                onClick={toggleAiVoiceListening}
+                className={`p-1 rounded cursor-pointer shrink-0 transition-colors ${
+                  isAiVoiceListening 
+                    ? 'text-red-500 hover:bg-red-500/10 animate-pulse' 
+                    : 'text-secondary hover:bg-secondary/10'
+                }`}
+                title={isAiVoiceListening ? 'ভয়েস বন্ধ করুন' : 'ভয়েসে বলুন'}
+              >
+                {isAiVoiceListening ? (
+                  <MicOff className="h-4 w-4 text-red-500" />
+                ) : (
+                  <Mic className="h-4 w-4 text-secondary" />
+                )}
+              </button>
+              <button 
+                type="submit" 
+                className={`text-xs font-bold text-secondary hover:text-secondary-hover shrink-0 cursor-pointer transition-all transform ${
+                  isSubmittingAi ? 'scale-95 text-secondary-hover underline' : ''
+                }`}
+              >
                 AI Find &rarr;
               </button>
             </div>
