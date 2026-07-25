@@ -8,7 +8,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PropertyCard, PropertyData } from '@/components/PropertyCard';
 import { SkeletonLoader } from '@/components/SkeletonLoader';
-import { Search, Sparkles, Building, Users, Star, HelpCircle, ShieldCheck, TrendingUp, Mic, MicOff, MapPin, Filter, Map } from 'lucide-react';
+import { Search, Sparkles, Building, Users, Star, HelpCircle, ShieldCheck, TrendingUp, Mic, MicOff, MapPin } from 'lucide-react';
 
 export default function HomePage() {
   const router = useRouter();
@@ -571,69 +571,6 @@ export default function HomePage() {
                   <span><strong>রিপোর্ট অপশন:</strong> কোনো ফেক লিস্টিং বা প্রতারণামূলক অ্যাকাউন্ট দেখলে সাথে সাথে আমাদের সাপোর্ট টিমে রিপোর্ট করুন।</span>
                 </li>
               </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 4.5: GEOLOCATION GPS RADAR GUIDE */}
-      <section className="py-16 bg-background border-b border-border">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <span className="text-xs font-bold uppercase tracking-wider text-primary">How Geolocation Works</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground mt-1">জিপিএস ও গুগল ম্যাপস রাডার যেভাবে কাজ করে</h2>
-            <p className="text-muted text-sm mt-2 max-w-xl mx-auto leading-relaxed">
-              আমাদের ইন্টারেক্টিভ জিপিএস সার্চ প্রযুক্তি ব্যবহার করে মাত্র কয়েকটি ধাপে আপনার আশেপাশের বাসা খুঁজে বের করুন।
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Step 1 */}
-            <div className="bg-card border border-border p-6 rounded-2xl relative hover:border-primary/20 transition-colors group">
-              <div className="absolute top-4 right-4 text-xs font-black text-primary/10 group-hover:text-primary/30 transition-colors text-3xl">০১</div>
-              <div className="h-10 w-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center mb-4">
-                <MapPin className="h-5 w-5" />
-              </div>
-              <h3 className="font-extrabold text-sm text-foreground mb-2">GPS লোকেশন ডিটেকশন</h3>
-              <p className="text-[11px] text-muted leading-relaxed">
-                ব্রাউজারের অনুমতি নিয়ে আপনার বর্তমান জিপিএস কোঅর্ডিনেট (অক্ষাংশ ও দ্রাঘিমাংশ) স্বয়ংক্রিয়ভাবে ডিটেক্ট করা হয়।
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="bg-card border border-border p-6 rounded-2xl relative hover:border-secondary/20 transition-colors group">
-              <div className="absolute top-4 right-4 text-xs font-black text-secondary/20 group-hover:text-secondary/30 transition-colors text-3xl">০২</div>
-              <div className="h-10 w-10 rounded-xl bg-secondary/5 text-secondary flex items-center justify-center mb-4">
-                <Filter className="h-5 w-5" />
-              </div>
-              <h3 className="font-extrabold text-sm text-foreground mb-2">কাস্টম ব্যাসার্ধ নির্ধারণ</h3>
-              <p className="text-[11px] text-muted leading-relaxed">
-                ম্যাপের নিচে থাকা ড্রপডাউন থেকে আপনার বর্তমান অবস্থান থেকে ২ কিমি, ৫ কিমি, ১০ কিমি বা ২০ কিমি দূরত্ব সিলেক্ট করুন।
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="bg-card border border-border p-6 rounded-2xl relative hover:border-accent/20 transition-colors group">
-              <div className="absolute top-4 right-4 text-xs font-black text-accent/20 group-hover:text-accent/30 transition-colors text-3xl">০৩</div>
-              <div className="h-10 w-10 rounded-xl bg-accent/5 text-accent flex items-center justify-center mb-4">
-                <Map className="h-5 w-5" />
-              </div>
-              <h3 className="font-extrabold text-sm text-foreground mb-2">লাইভ ম্যাপ ভিজ্যুয়ালাইজেশন</h3>
-              <p className="text-[11px] text-muted leading-relaxed">
-                আপনার চারপাশের সব লিস্টিং ম্যাপে লাল পিন মার্কার দিয়ে ডাইনামিকালি রেন্ডার করা হবে, যা দেখতে রাডারের মতো কাজ করে।
-              </p>
-            </div>
-
-            {/* Step 4 */}
-            <div className="bg-card border border-border p-6 rounded-2xl relative hover:border-emerald-600/20 transition-colors group">
-              <div className="absolute top-4 right-4 text-xs font-black text-emerald-600/20 group-hover:text-emerald-600/30 transition-colors text-3xl">০৪</div>
-              <div className="h-10 w-10 rounded-xl bg-emerald-600/5 text-emerald-600 flex items-center justify-center mb-4">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <h3 className="font-extrabold text-sm text-foreground mb-2">গুগল ডিরেকশন ও নেভিগেশন</h3>
-              <p className="text-[11px] text-muted leading-relaxed">
-                পছন্দের বাসার ওপর ক্লিক করে সরাসরি গুগল ম্যাপস ডিরেকশন ওপেন করুন এবং লাইভ জিপিএস নেভিগেশন দিয়ে সশরীরে বাসা ভিজিট করুন।
-              </p>
             </div>
           </div>
         </div>
