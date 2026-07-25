@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Sparkles, Plus, Image as ImageIcon, MapPin, Phone, CheckCircle2, AlertCircle, Trash2, Mic, MicOff, Navigation } from 'lucide-react';
+import { Sparkles, Plus, Image as ImageIcon, MapPin, Phone, CheckCircle2, AlertCircle, Trash2, Mic, MicOff, Navigation, X } from 'lucide-react';
 
 // Dynamically import MapPicker with SSR disabled to avoid Leaflet window errors
 const MapPicker = dynamic(() => import('@/components/MapPicker'), {
@@ -31,6 +31,8 @@ export default function AddPropertyPage() {
   const [contactPhone, setContactPhone] = useState('');
   const [description, setDescription] = useState('');
   const [amenities, setAmenities] = useState<string[]>([]);
+  const [showCustomAmenityInput, setShowCustomAmenityInput] = useState(false);
+  const [customAmenityText, setCustomAmenityText] = useState('');
   
   // Map states (Default Dhaka coordinates)
   const [latitude, setLatitude] = useState(23.7808875);
@@ -319,6 +321,8 @@ export default function AddPropertyPage() {
       setAddress('');
       setIsBachelorAllowed(false);
       setAmenities([]);
+      setShowCustomAmenityInput(false);
+      setCustomAmenityText('');
       setDescription('');
       setLatitude(23.7808875);
       setLongitude(90.4228516);
@@ -567,9 +571,9 @@ export default function AddPropertyPage() {
             </div>
 
             {/* Amenities Selection Checklist */}
-            <div className="space-y-3 bg-slate-50/50 dark:bg-slate-900/50 p-4 sm:p-5 rounded-2xl border border-border">
+            <div className="space-y-4 bg-slate-50/50 dark:bg-slate-900/50 p-4 sm:p-5 rounded-2xl border border-border">
               <label className="block text-xs font-bold text-muted uppercase tracking-wider">বাসার কমন সুবিধাসমূহ (Select Amenities)</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
                 {[
                   'সার্বক্ষণিক নিরাপত্তা প্রহরী',
                   'সরাসরি গ্যাস কানেকশন',
@@ -604,7 +608,91 @@ export default function AddPropertyPage() {
                     </label>
                   </div>
                 ))}
+                
+                {/* Show Custom Amenity Toggle Checkbox */}
+                <div className="flex items-center gap-2.5">
+                  <input
+                    type="checkbox"
+                    id="amenity-custom-toggle"
+                    checked={showCustomAmenityInput}
+                    onChange={(e) => setShowCustomAmenityInput(e.target.checked)}
+                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                  />
+                  <label
+                    htmlFor="amenity-custom-toggle"
+                    className="text-xs sm:text-sm text-foreground font-semibold cursor-pointer select-none"
+                  >
+                    অন্যান্য সুবিধা যোগ করুন
+                  </label>
+                </div>
               </div>
+
+              {/* Custom Amenity Input Field */}
+              {showCustomAmenityInput && (
+                <div className="space-y-3 pt-2 border-t border-border/60">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="কাস্টম সুবিধা লিখুন (যেমন: সুইমিং পুল)"
+                      value={customAmenityText}
+                      onChange={(e) => setCustomAmenityText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const val = customAmenityText.trim();
+                          if (val && !amenities.includes(val)) {
+                            setAmenities(prev => [...prev, val]);
+                            setCustomAmenityText('');
+                          }
+                        }
+                      }}
+                      className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border border-border rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary text-foreground"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const val = customAmenityText.trim();
+                        if (val && !amenities.includes(val)) {
+                          setAmenities(prev => [...prev, val]);
+                          setCustomAmenityText('');
+                        }
+                      }}
+                      className="bg-primary hover:bg-primary-hover text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer shadow-sm shrink-0"
+                    >
+                      যোগ করুন
+                    </button>
+                  </div>
+
+                  {/* Render Custom Amenities Badges */}
+                  {amenities.filter(a => ![
+                    'সার্বক্ষণিক নিরাপত্তা প্রহরী', 'সরাসরি গ্যাস কানেকশন', 'জেনারেটর ব্যাকআপ', 'লিফট (Lift) সুবিধা', 
+                    'সিসিটিভি ক্যামেরা নিরাপত্তা', 'পর্যাপ্ত আলো-বাতাস', 'গ্যারেজ/পার্কিং সুবিধা', 'ওয়াই-ফাই ইন্টারনেট', 
+                    'খাবার পানির ফিল্টার/সাপ্লাই', 'বারান্দা'
+                  ].includes(a)).length > 0 && (
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {amenities.filter(a => ![
+                        'সার্বক্ষণিক নিরাপত্তা প্রহরী', 'সরাসরি গ্যাস কানেকশন', 'জেনারেটর ব্যাকআপ', 'লিফট (Lift) সুবিধা', 
+                        'সিসিটিভি ক্যামেরা নিরাপত্তা', 'পর্যাপ্ত আলো-বাতাস', 'গ্যারেজ/পার্কিং সুবিধা', 'ওয়াই-ফাই ইন্টারনেট', 
+                        'খাবার পানির ফিল্টার/সাপ্লাই', 'বারান্দা'
+                      ].includes(a)).map((tag) => (
+                        <span
+                          key={tag}
+                          className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1.5 rounded-full border border-primary/20"
+                        >
+                          <span>{tag}</span>
+                          <button
+                            type="button"
+                            onClick={() => setAmenities(prev => prev.filter(a => a !== tag))}
+                            className="hover:bg-primary/25 rounded-full p-0.5 transition-colors cursor-pointer"
+                          >
+                            <X className="h-3 w-3 shrink-0" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* AI Generator Helper Button & Description Area */}
