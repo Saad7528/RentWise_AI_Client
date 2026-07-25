@@ -3,7 +3,7 @@
 import React from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Sparkles, ShieldCheck, Heart, User, CheckCircle } from 'lucide-react';
+import { Sparkles, ShieldCheck, Heart, User, CheckCircle, MapPin } from 'lucide-react';
 
 export default function AboutPage() {
   return (
@@ -36,9 +36,9 @@ export default function AboutPage() {
           </div>
 
           {/* Key Advantages Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             
-            <div className="bg-card border border-border p-6 rounded-2xl flex gap-3.5">
+            <div className="bg-card border border-border p-6 rounded-2xl flex gap-3.5 hover:border-primary/20 transition-colors">
               <Sparkles className="h-6 w-6 text-primary shrink-0" />
               <div>
                 <h3 className="font-bold text-sm text-foreground">কৃত্রিম বুদ্ধিমত্তা সার্চ (AI Search)</h3>
@@ -48,12 +48,22 @@ export default function AboutPage() {
               </div>
             </div>
 
-            <div className="bg-card border border-border p-6 rounded-2xl flex gap-3.5">
+            <div className="bg-card border border-border p-6 rounded-2xl flex gap-3.5 hover:border-secondary/20 transition-colors">
               <ShieldCheck className="h-6 w-6 text-secondary shrink-0" />
               <div>
                 <h3 className="font-bold text-sm text-foreground">নিরাপদ ডিরেক্টরি (Direct Connection)</h3>
                 <p className="text-xs text-muted mt-1 leading-relaxed">
                   কোনো হিডেন চার্জ নেই। ওয়ান-ক্লিক কল এবং সরাসরি হোয়াটসঅ্যাপ বাটন যুক্ত থাকায় আপনি সেকেন্ডেই ল্যান্ডলর্ডের সাথে যুক্ত হতে পারবেন।
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-card border border-border p-6 rounded-2xl flex gap-3.5 hover:border-accent/20 transition-colors">
+              <MapPin className="h-6 w-6 text-accent shrink-0" />
+              <div>
+                <h3 className="font-bold text-sm text-foreground">জিপিএস ও গুগল ডিরেকশন (Map Navigation)</h3>
+                <p className="text-xs text-muted mt-1 leading-relaxed">
+                  ১-ক্লিকে নিজের লোকেশনের আশেপাশে বাসা খুঁজুন এবং সরাসরি গুগল ম্যাপস রুট ডিরেকশন দিয়ে সশরীরে বাসা ভিজিট করুন।
                 </p>
               </div>
             </div>
