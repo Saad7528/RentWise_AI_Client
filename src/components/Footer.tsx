@@ -24,7 +24,7 @@ export const Footer: React.FC = () => {
             </p>
             {/* Social Icons */}
             <div className="flex items-center gap-3 pt-2">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 text-muted hover:text-primary rounded-lg border border-border hover:border-primary/20 transition-all">
+              <a href="https://www.facebook.com/s.m.amirulislam.saad" target="_blank" rel="noopener noreferrer" className="p-2 text-muted hover:text-primary rounded-lg border border-border hover:border-primary/20 transition-all">
                 <Facebook className="h-4 w-4" />
               </a>
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="p-2 text-muted hover:text-primary rounded-lg border border-border hover:border-primary/20 transition-all">
@@ -33,7 +33,7 @@ export const Footer: React.FC = () => {
               <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 text-muted hover:text-primary rounded-lg border border-border hover:border-primary/20 transition-all">
                 <Instagram className="h-4 w-4" />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="p-2 text-muted hover:text-primary rounded-lg border border-border hover:border-primary/20 transition-all">
+              <a href="https://www.linkedin.com/in/s-m-amirul-islam-saad" target="_blank" rel="noopener noreferrer" className="p-2 text-muted hover:text-primary rounded-lg border border-border hover:border-primary/20 transition-all">
                 <Linkedin className="h-4 w-4" />
               </a>
             </div>
@@ -64,15 +64,15 @@ export const Footer: React.FC = () => {
             <ul className="space-y-3">
               <li className="flex items-start gap-2.5 text-sm text-muted">
                 <MapPin className="h-4.5 w-4.5 text-accent shrink-0 mt-0.5" />
-                <span>ধানমন্ডি, ঢাকা ১২০৯, বাংলাদেশ</span>
+                <span>ঠাকুরগাঁও সদর, ঠাকুরগাঁও, বাংলাদেশ</span>
               </li>
               <li className="flex items-center gap-2.5 text-sm text-muted">
                 <Phone className="h-4.5 w-4.5 text-primary shrink-0" />
-                <a href="tel:+8801712345678" className="hover:text-primary transition-colors">+880 1712-345678</a>
+                <a href="tel:+8801851192657" className="hover:text-primary transition-colors">+880 1851192657</a>
               </li>
               <li className="flex items-center gap-2.5 text-sm text-muted">
                 <Mail className="h-4.5 w-4.5 text-primary shrink-0" />
-                <a href="mailto:support@rentwise.ai" className="hover:text-primary transition-colors">support@rentwise.ai</a>
+                <a href="mailto:saad0174742@gmail.com" className="hover:text-primary transition-colors">saad0174742@gmail.com</a>
               </li>
             </ul>
           </div>
