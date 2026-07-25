@@ -8,7 +8,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PropertyCard, PropertyData } from '@/components/PropertyCard';
 import { SkeletonLoader } from '@/components/SkeletonLoader';
-import { Search, Sparkles, Building, Users, Star, HelpCircle, ShieldCheck, TrendingUp, Mic, MicOff } from 'lucide-react';
+import { Search, Sparkles, Building, Users, Star, HelpCircle, ShieldCheck, TrendingUp, Mic, MicOff, MapPin } from 'lucide-react';
 
 export default function HomePage() {
   const router = useRouter();
@@ -516,18 +516,32 @@ export default function HomePage() {
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-border rounded-xl flex gap-3">
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-border rounded-xl flex gap-3 hover:border-primary/20 transition-colors">
                   <Sparkles className="h-6 w-6 text-primary shrink-0" />
                   <div>
                     <h3 className="font-bold text-sm text-foreground">AI Listing Copy</h3>
                     <p className="text-xs text-muted mt-1">সহজ তথ্যে আকর্ষক মার্কেটিং ডেসক্রিপশন জেনারেট করে।</p>
                   </div>
                 </div>
-                <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-border rounded-xl flex gap-3">
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-border rounded-xl flex gap-3 hover:border-secondary/20 transition-colors">
                   <Sparkles className="h-6 w-6 text-secondary shrink-0" />
                   <div>
                     <h3 className="font-bold text-sm text-foreground">AI Natural Search</h3>
-                    <p className="text-xs text-muted mt-1">বাংলা ও ইংলিশ প্রম্পটের মাধ্যমে সরাসরি সার্চ ও ফিল্টারিং।</p>
+                    <p className="text-xs text-muted mt-1">উন্নত অফলাইন পার্সার সহ বাংলা/ইংলিশ প্রম্পটে স্মার্ট সার্চ।</p>
+                  </div>
+                </div>
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-border rounded-xl flex gap-3 hover:border-accent/20 transition-colors">
+                  <MapPin className="h-6 w-6 text-accent shrink-0" />
+                  <div>
+                    <h3 className="font-bold text-sm text-foreground">GPS Proximity Search</h3>
+                    <p className="text-xs text-muted mt-1">১-ক্লিকে নিজের অবস্থানের ৫/১০ কিমি ব্যাসার্ধের বাসা খুঁজুন।</p>
+                  </div>
+                </div>
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-border rounded-xl flex gap-3 hover:border-primary/20 transition-colors">
+                  <MapPin className="h-6 w-6 text-emerald-600 shrink-0" />
+                  <div>
+                    <h3 className="font-bold text-sm text-foreground">Google Maps Direction</h3>
+                    <p className="text-xs text-muted mt-1">সরাসরি গুগল ম্যাপস জিপিএস নেভিগেশন ও ডিরেকশন লিংক।</p>
                   </div>
                 </div>
               </div>
