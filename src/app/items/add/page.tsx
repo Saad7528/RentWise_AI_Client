@@ -30,6 +30,7 @@ export default function AddPropertyPage() {
   const [isBachelorAllowed, setIsBachelorAllowed] = useState(false);
   const [contactPhone, setContactPhone] = useState('');
   const [description, setDescription] = useState('');
+  const [amenities, setAmenities] = useState<string[]>([]);
   
   // Map states (Default Dhaka coordinates)
   const [latitude, setLatitude] = useState(23.7808875);
@@ -317,6 +318,7 @@ export default function AddPropertyPage() {
       setBathrooms('2');
       setAddress('');
       setIsBachelorAllowed(false);
+      setAmenities([]);
       setDescription('');
       setLatitude(23.7808875);
       setLongitude(90.4228516);
@@ -366,6 +368,7 @@ export default function AddPropertyPage() {
         longitude,
         images: allImages,
         contactPhone,
+        amenities,
       };
 
       const res = await api.post('/api/properties', payload);
@@ -561,6 +564,47 @@ export default function AddPropertyPage() {
               <label htmlFor="isBachelorAllowed" className="text-xs sm:text-sm font-bold text-foreground cursor-pointer select-none">
                 ব্যাচেলর ভাড়া দেওয়া যাবে (Bachelor Allowed)
               </label>
+            </div>
+
+            {/* Amenities Selection Checklist */}
+            <div className="space-y-3 bg-slate-50/50 dark:bg-slate-900/50 p-4 sm:p-5 rounded-2xl border border-border">
+              <label className="block text-xs font-bold text-muted uppercase tracking-wider">বাসার কমন সুবিধাসমূহ (Select Amenities)</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  'সার্বক্ষণিক নিরাপত্তা প্রহরী',
+                  'সরাসরি গ্যাস কানেকশন',
+                  'জেনারেটর ব্যাকআপ',
+                  'লিফট (Lift) সুবিধা',
+                  'সিসিটিভি ক্যামেরা নিরাপত্তা',
+                  'পর্যাপ্ত আলো-বাতাস',
+                  'গ্যারেজ/পার্কিং সুবিধা',
+                  'ওয়াই-ফাই ইন্টারনেট',
+                  'খাবার পানির ফিল্টার/সাপ্লাই',
+                  'বারান্দা'
+                ].map((amenity) => (
+                  <div key={amenity} className="flex items-center gap-2.5">
+                    <input
+                      type="checkbox"
+                      id={`amenity-${amenity}`}
+                      checked={amenities.includes(amenity)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setAmenities((prev) => [...prev, amenity]);
+                        } else {
+                          setAmenities((prev) => prev.filter((a) => a !== amenity));
+                        }
+                      }}
+                      className="h-4 w-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                    />
+                    <label
+                      htmlFor={`amenity-${amenity}`}
+                      className="text-xs sm:text-sm text-foreground cursor-pointer select-none"
+                    >
+                      {amenity}
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* AI Generator Helper Button & Description Area */}

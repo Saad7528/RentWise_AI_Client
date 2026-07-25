@@ -20,6 +20,7 @@ export interface PropertyData {
   images: string[];
   status: 'PENDING' | 'APPROVED' | 'RENTED' | 'REJECTED';
   contactPhone: string;
+  amenities?: string[];
   createdAt: string;
 }
 

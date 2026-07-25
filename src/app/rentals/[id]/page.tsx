@@ -232,17 +232,23 @@ export default function PropertyDetailsPage() {
             </div>
 
             {/* Amenities Grid checklist */}
-            <div className="bg-card border border-border p-6 rounded-2xl">
-              <h3 className="font-bold text-sm text-foreground mb-4">কমন এমেনিটিজ ও সুবিধাসমূহ</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs sm:text-sm text-muted">
-                {['সার্বক্ষণিক নিরাপত্তা প্রহরী', 'সরাসরি গ্যাস কানেকশন', 'জেনারেটর ব্যাকআপ', 'লিফট (Lift) সুবিধা', 'সিসিটিভি ক্যামেরা নিরাপত্তা', 'পর্যাপ্ত আলো-বাতাস'].map((amenity, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-emerald-600 shrink-0" />
-                    <span>{amenity}</span>
-                  </div>
-                ))}
+            {((property.amenities !== undefined ? property.amenities : [
+              'সার্বক্ষণিক নিরাপত্তা প্রহরী', 'সরাসরি গ্যাস কানেকশন', 'জেনারেটর ব্যাকআপ', 'লিফট (Lift) সুবিধা', 'সিসিটিভি ক্যামেরা নিরাপত্তা', 'পর্যাপ্ত আলো-বাতাস'
+            ]) as string[]).length > 0 && (
+              <div className="bg-card border border-border p-6 rounded-2xl">
+                <h3 className="font-bold text-sm text-foreground mb-4">কমন এমেনিটিজ ও সুবিধাসমূহ</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs sm:text-sm text-muted">
+                  {(property.amenities !== undefined ? property.amenities : [
+                    'সার্বক্ষণিক নিরাপত্তা প্রহরী', 'সরাসরি গ্যাস কানেকশন', 'জেনারেটর ব্যাকআপ', 'লিফট (Lift) সুবিধা', 'সিসিটিভি ক্যামেরা নিরাপত্তা', 'পর্যাপ্ত আলো-বাতাস'
+                  ]).map((amenity, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <span>{amenity}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
           </div>
 
