@@ -1002,7 +1002,10 @@ function RentalsContent() {
             </span>
             <span className="text-[10px] sm:text-xs font-bold text-foreground bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/20">
               {propertiesList.length > 0 
-                ? `${toBengaliNumber(propertiesList.length)}টি প্রোপার্টি পাওয়া গেছে`
+                ? (isAiMode 
+                    ? `${toBengaliNumber(propertiesList.length)}টি প্রোপার্টি পাওয়া গেছে`
+                    : `${toBengaliNumber(propertiesList.length)}টি দেখানো হচ্ছে (মোট ${toBengaliNumber(regularData?.pagination?.total || propertiesList.length)}টির মধ্যে)`
+                  )
                 : 'কোনো প্রোপার্টি পাওয়া যায়নি'
               }
             </span>
