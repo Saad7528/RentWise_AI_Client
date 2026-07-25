@@ -448,6 +448,32 @@ function RentalsContent() {
     handleResetAiMode();
   };
 
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      alert('আপনার ব্রাউজারটি জিপিএস লোকেশন সাপোর্ট করে না।');
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setPinnedLat(latitude);
+        setPinnedLng(longitude);
+        setDivision('');
+        setDistrict('');
+        setThana('');
+        setNeighborhood('');
+        setIsAiMode(false);
+        setPage(1);
+      },
+      (error) => {
+        console.error('Error getting geolocation:', error);
+        alert('আপনার অবস্থান সনাক্ত করা সম্ভব হয়নি। দয়া করে ব্রাউজারের লোকেশন পারমিশন দিন।');
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
   return (
     <div className="flex-1 flex flex-col">
       {/* Top Filter & AI Search Bar */}
@@ -602,12 +628,23 @@ function RentalsContent() {
                 <SlidersHorizontal className="h-3.5 w-3.5 text-primary" />
                 ফিল্টারসমূহ
               </span>
-              <button
-                onClick={handleResetFilters}
-                className="text-xs font-semibold text-primary hover:underline cursor-pointer"
-              >
-                রিসেট ফিল্টার
-              </button>
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={handleUseMyLocation}
+                  className="flex items-center gap-1.5 text-xs text-primary font-bold hover:underline cursor-pointer"
+                >
+                  <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                  আমার বর্তমান অবস্থান
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+                >
+                  রিসেট ফিল্টার
+                </button>
+              </div>
             </div>
             
             {/* Row 1: Geographical cascading selectors */}
@@ -805,7 +842,19 @@ function RentalsContent() {
             <div className="lg:hidden bg-card border border-border p-5 rounded-2xl mb-6 space-y-4 shadow-md">
               <div className="flex items-center justify-between pb-2 border-b border-border">
                 <span className="text-xs font-bold uppercase tracking-wider text-muted">মোবাইল ফিল্টার</span>
-                <button onClick={handleResetFilters} className="text-xs font-semibold text-primary hover:underline">রিসেট</button>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => {
+                      handleUseMyLocation();
+                      setShowFiltersMobile(false);
+                    }} 
+                    className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                  >
+                    <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                    আমার অবস্থান
+                  </button>
+                  <button onClick={handleResetFilters} className="text-xs font-semibold text-primary hover:underline">রিসেট</button>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
