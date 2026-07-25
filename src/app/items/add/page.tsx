@@ -287,6 +287,7 @@ export default function AddPropertyPage() {
         isBachelorAllowed,
         description: description || undefined,
         imagesBase64: imagesBase64.length > 0 ? imagesBase64 : undefined,
+        amenities: amenities.length > 0 ? amenities : undefined,
       };
 
       const res = await api.post('/api/ai/generate', payload);
