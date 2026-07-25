@@ -369,6 +369,7 @@ function RentalsContent() {
       if (bedrooms) params.bedrooms = bedrooms;
       if (bathrooms) params.bathrooms = bathrooms;
       if (isBachelorAllowed) params.isBachelorAllowed = 'true';
+      if (division) params.division = division;
       if (district) params.district = district;
       if (thana) params.thana = thana;
       if (neighborhood) params.neighborhood = neighborhood;
