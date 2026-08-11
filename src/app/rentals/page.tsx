@@ -10,6 +10,7 @@ import { Footer } from '@/components/Footer';
 import { PropertyCard, PropertyData } from '@/components/PropertyCard';
 import { SkeletonLoader } from '@/components/SkeletonLoader';
 import { Search, Sparkles, Filter, SlidersHorizontal, Map, Grid, ChevronLeft, ChevronRight, X, AlertCircle, Mic, MicOff, MapPin } from 'lucide-react';
+import { GEO_DATA } from '@/data/geoData';
 
 // Dynamically import properties map to prevent window undefined SSR errors
 const PropertiesMap = dynamic(() => import('@/components/PropertiesMap'), {
@@ -1146,8 +1147,8 @@ export default function ExploreRentalsPage() {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       <Suspense fallback={
-        <div className="flex-1 flex items-center justify-center text-sm font-semibold text-muted">
-          Loading explore page...
+        <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+          <SkeletonLoader count={8} />
         </div>
       }>
         <RentalsContent />
@@ -1174,49 +1175,3 @@ const toBengaliNumber = (num: number | string) => {
   return String(num).replace(/[0-9]/g, (w) => englishToBengaliMap[w]);
 };
 
-// Division, District, Thana and Neighborhood static cascading configuration
-const GEO_DATA: {
-  [division: string]: {
-    name: string;
-    districts: {
-      [district: string]: {
-        name: string;
-        thanas: {
-          [thana: string]: {
-            name: string;
-            neighborhoods: string[];
-          };
-        };
-      };
-    };
-  };
-} = {
-  'Dhaka': {
-    name: 'ঢাকা বিভাগ',
-    districts: {
-      'Dhaka': {
-        name: 'ঢাকা জেলা',
-        thanas: {
-          'Dhanmondi': { name: 'ধানমন্ডি', neighborhoods: ['Dhanmondi R/A', 'Sobhanbagh'] },
-          'Mirpur': { name: 'মিরপুর', neighborhoods: ['Mirpur 1', 'Mirpur 10', 'Mirpur 11', 'Mirpur 12'] },
-          'Uttara': { name: 'উত্তরা', neighborhoods: ['Uttara Sector 1', 'Uttara Sector 3', 'Uttara Sector 5'] },
-          'Hazaribagh': { name: 'হাজারীবাগ', neighborhoods: ['Hazaribagh Tanners', 'Jigatola'] }
-        }
-      }
-    }
-  },
-  'Rangpur': {
-    name: 'রংপুর বিভাগ',
-    districts: {
-      'Thakurgaon': {
-        name: 'ঠাকুরগাঁও জেলা',
-        thanas: {
-          'Thakurgaon Sadar': {
-            name: 'ঠাকুরগাঁও সদর',
-            neighborhoods: ['Masterpara', 'Sarkarpara', 'Gobindanagar', 'Basirpara', 'Hazipara']
-          }
-        }
-      }
-    }
-  }
-};
