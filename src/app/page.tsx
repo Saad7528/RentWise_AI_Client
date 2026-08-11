@@ -331,8 +331,7 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(15,118,110,0.15),rgba(255,255,255,0))]" />
         
         <div className="relative mx-auto max-w-4xl px-4 text-center z-10">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-4 animate-pulse">
-            <Sparkles className="h-3.5 w-3.5" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-8 ">
             AI-Powered Property Search Platform
           </span>
           <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-foreground mb-4">
