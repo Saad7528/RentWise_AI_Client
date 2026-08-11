@@ -87,7 +87,13 @@ export const Navbar: React.FC = () => {
             >
               {theme === 'light' ? <Moon className="h-4.5 w-4.5" /> : <Sun className="h-4.5 w-4.5" />}
             </button>
-            {!loading && (
+
+            {loading ? (
+              <div className="flex items-center gap-2 animate-pulse">
+                <div className="w-8 h-8 rounded-full bg-muted/20 shrink-0" />
+                <div className="w-16 h-3 bg-muted/15 rounded hidden lg:block" />
+              </div>
+            ) : (
               user ? (
                 <div className="flex items-center gap-3">
                   {/* User Profile Info */}
@@ -121,7 +127,6 @@ export const Navbar: React.FC = () => {
                       onClick={() => setShowDemoDropdown(!showDemoDropdown)}
                       className="flex items-center gap-1.5 bg-card hover:bg-slate-50 dark:hover:bg-slate-900 border border-border text-foreground text-xs font-semibold px-3 py-2 rounded-lg transition-colors cursor-pointer shrink-0"
                     >
-                      <Sparkles className="h-4 w-4 text-accent animate-pulse shrink-0" />
                       <span>Demo Login</span>
                     </button>
 
