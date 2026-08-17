@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { AdminDashboardSkeleton, TableSkeleton } from '@/components/SkeletonLoader';
 import { 
   Users, Building, Sparkles, ShieldCheck, ToggleLeft, ToggleRight, 
   Trash2, Ban, UserCheck, TrendingUp, AlertCircle, BarChart3, PieChart, Clock
@@ -173,8 +174,10 @@ export default function AdminDashboardPage() {
 
   if (loading || !user || user.role !== 'ADMIN') {
     return (
-      <div className="min-h-screen flex items-center justify-center text-sm font-semibold text-muted">
-        Checking Admin Permissions...
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <AdminDashboardSkeleton />
+        <Footer />
       </div>
     );
   }
@@ -224,7 +227,17 @@ export default function AdminDashboardPage() {
         )}
 
         {/* Statistical Summary Cards */}
-        {!analyticsLoading && analytics?.summary && (
+        {analyticsLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 animate-pulse">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-card border border-border p-6 rounded-xl space-y-3">
+                <div className="h-5 w-5 bg-muted/20 rounded" />
+                <div className="h-8 bg-muted/20 rounded-md w-20" />
+                <div className="h-3 bg-muted/15 rounded w-24" />
+              </div>
+            ))}
+          </div>
+        ) : analytics?.summary ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="bg-card border border-border p-6 rounded-xl relative overflow-hidden">
               <Users className="h-5 w-5 text-primary mb-2" />
@@ -247,7 +260,7 @@ export default function AdminDashboardPage() {
               <span className="text-xs text-muted font-bold mt-1 block">ভাড়া হয়ে গেছে (Rented)</span>
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* Analytics Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
