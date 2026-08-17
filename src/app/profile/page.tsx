@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { ProfileSkeleton } from '@/components/SkeletonLoader';
 import { User, Phone, MapPin, Camera, Save, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -98,11 +99,9 @@ export default function ProfilePage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0b0f19]">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary"></div>
-        </div>
+        <ProfileSkeleton />
         <Footer />
       </div>
     );
