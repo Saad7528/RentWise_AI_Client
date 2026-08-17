@@ -9,6 +9,7 @@ import { api } from '@/lib/api';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PropertyCard, PropertyData } from '@/components/PropertyCard';
+import { PropertyDetailSkeleton } from '@/components/SkeletonLoader';
 import { MapPin, Bed, Home, Phone, Share2, Calendar, ShieldCheck, Check, MessageSquare, Navigation } from 'lucide-react';
 
 // Dynamically import DetailMap to bypass window undefined errors on SSR
@@ -79,9 +80,7 @@ export default function PropertyDetailsPage() {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-sm font-semibold text-muted animate-pulse">Loading Listing Details...</div>
-        </div>
+        <PropertyDetailSkeleton />
         <Footer />
       </div>
     );
@@ -124,7 +123,7 @@ export default function PropertyDetailsPage() {
       <Navbar />
 
       <main className="flex-1 py-10 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8">
-        
+
         {/* Breadcrumb / Top Info */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
@@ -161,10 +160,10 @@ export default function PropertyDetailsPage() {
 
         {/* Primary Page Layout Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-16">
-          
+
           {/* Left Column (Images, specs, description) */}
           <div className="lg:col-span-8 space-y-8">
-            
+
             {/* Image Slider Gallery */}
             <div className="space-y-3">
               <div className="h-[300px] sm:h-[450px] w-full rounded-2xl overflow-hidden border border-border bg-slate-100 relative">
@@ -183,9 +182,8 @@ export default function PropertyDetailsPage() {
                     <button
                       key={idx}
                       onClick={() => setActiveImage(img)}
-                      className={`h-16 w-24 rounded-lg overflow-hidden border-2 shrink-0 cursor-pointer transition-all ${
-                        activeDisplayImg === img ? 'border-primary' : 'border-border opacity-70'
-                      }`}
+                      className={`h-16 w-24 rounded-lg overflow-hidden border-2 shrink-0 cursor-pointer transition-all ${activeDisplayImg === img ? 'border-primary' : 'border-border opacity-70'
+                        }`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={img} alt="thumbnail" className="w-full h-full object-cover" />
@@ -225,7 +223,7 @@ export default function PropertyDetailsPage() {
                 <Home className="h-5 w-5 text-primary" />
                 বাসার বিবরণ ও সুযোগ-সুবিধা
               </h2>
-              
+
               <div className="mt-4 space-y-1">
                 {renderMarkdown(property.description)}
               </div>
@@ -235,26 +233,26 @@ export default function PropertyDetailsPage() {
             {((property.amenities !== undefined ? property.amenities : [
               'সার্বক্ষণিক নিরাপত্তা প্রহরী', 'সরাসরি গ্যাস কানেকশন', 'জেনারেটর ব্যাকআপ', 'লিফট (Lift) সুবিধা', 'সিসিটিভি ক্যামেরা নিরাপত্তা', 'পর্যাপ্ত আলো-বাতাস'
             ]) as string[]).length > 0 && (
-              <div className="bg-card border border-border p-6 rounded-2xl">
-                <h3 className="font-bold text-sm text-foreground mb-4">কমন এমেনিটিজ ও সুবিধাসমূহ</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs sm:text-sm text-muted">
-                  {(property.amenities !== undefined ? property.amenities : [
-                    'সার্বক্ষণিক নিরাপত্তা প্রহরী', 'সরাসরি গ্যাস কানেকশন', 'জেনারেটর ব্যাকআপ', 'লিফট (Lift) সুবিধা', 'সিসিটিভি ক্যামেরা নিরাপত্তা', 'পর্যাপ্ত আলো-বাতাস'
-                  ]).map((amenity, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-emerald-600 shrink-0" />
-                      <span>{amenity}</span>
-                    </div>
-                  ))}
+                <div className="bg-card border border-border p-6 rounded-2xl">
+                  <h3 className="font-bold text-sm text-foreground mb-4">কমন এমেনিটিজ ও সুবিধাসমূহ</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs sm:text-sm text-muted">
+                    {(property.amenities !== undefined ? property.amenities : [
+                      'সার্বক্ষণিক নিরাপত্তা প্রহরী', 'সরাসরি গ্যাস কানেকশন', 'জেনারেটর ব্যাকআপ', 'লিফট (Lift) সুবিধা', 'সিসিটিভি ক্যামেরা নিরাপত্তা', 'পর্যাপ্ত আলো-বাতাস'
+                    ]).map((amenity, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <span>{amenity}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
           </div>
 
           {/* Right Column: Contact CTAs & Location Map Card */}
           <div className="lg:col-span-4 space-y-6">
-            
+
             {/* Contact Panel Card */}
             <div className="bg-card border border-border p-6 rounded-2xl space-y-5">
               <div className="text-center">
@@ -264,7 +262,7 @@ export default function PropertyDetailsPage() {
                   <span className="text-xs text-muted mt-1 block">অগ্রিম অগ্রিম জামানত: {depositFormatted}</span>
                 )}
               </div>
-              
+
               <hr className="border-border" />
 
               <div className="space-y-3">
@@ -302,7 +300,7 @@ export default function PropertyDetailsPage() {
                 <MapPin className="h-4.5 w-4.5 text-accent" />
                 বাসার ম্যাপ লোকেশন
               </h3>
-              
+
               {property.location?.coordinates && (
                 <div className="space-y-3">
                   <DetailMap
