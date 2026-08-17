@@ -9,7 +9,7 @@ import { api } from '@/lib/api';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PropertyData } from '@/components/PropertyCard';
-import { SkeletonLoader } from '@/components/SkeletonLoader';
+import { SkeletonLoader, TableSkeleton } from '@/components/SkeletonLoader';
 import { Eye, Trash2, Home, Power, HelpCircle, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 
 export default function ManageListingsPage() {
@@ -97,8 +97,12 @@ export default function ManageListingsPage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-sm font-semibold text-muted">
-        Checking authentication...
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <main className="flex-1 py-12 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8">
+          <TableSkeleton rows={4} />
+        </main>
+        <Footer />
       </div>
     );
   }
@@ -140,7 +144,7 @@ export default function ManageListingsPage() {
 
         {/* Listings Table / Grid */}
         {isLoading ? (
-          <SkeletonLoader count={4} />
+          <TableSkeleton rows={4} />
         ) : listings.length > 0 ? (
           <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
