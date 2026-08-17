@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { FormPageSkeleton } from '@/components/SkeletonLoader';
 import { Sparkles, Plus, Image as ImageIcon, MapPin, Phone, CheckCircle2, AlertCircle, Trash2, Mic, MicOff, Navigation, X } from 'lucide-react';
 
 // Dynamically import MapPicker with SSR disabled to avoid Leaflet window errors
@@ -394,8 +395,10 @@ export default function AddPropertyPage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-sm font-semibold text-muted">
-        Checking authentication...
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <FormPageSkeleton />
+        <Footer />
       </div>
     );
   }
